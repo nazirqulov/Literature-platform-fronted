@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/useAuth';
 import { toast } from 'react-toastify';
 import { User, Mail, Lock, Loader2 } from 'lucide-react';
 
@@ -122,3 +122,4 @@ const RegisterPage: React.FC = () => {
 };
 
 export default RegisterPage;
+

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/useAuth';
 import ProfileInfo from './ProfileInfo';
 import ProfileForm from './ProfileForm';
 import ProfileImageUploader from './ProfileImageUploader';
@@ -7,10 +7,12 @@ import BookList from './BookList';
 import { Loader2, Settings, List } from 'lucide-react';
 
 const ProfilePage: React.FC = () => {
-    const { user, refreshUser, isLoading } = useAuth();
+    const { user, refreshUser, refreshProfileImageUrl, isLoading } = useAuth();
 
     useEffect(() => {
-        refreshUser();
+        void Promise.all([refreshUser(), refreshProfileImageUrl()]);
+        // Context funksiyalari har renderda yangilangani uchun dependency qo'shilsa request loop yuz beradi.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     if (isLoading || !user) {
@@ -99,3 +101,4 @@ const ProfilePage: React.FC = () => {
 };
 
 export default ProfilePage;
+

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/useAuth';
 import { toast } from 'react-toastify';
 import { Loader2, Mail } from 'lucide-react';
 
@@ -112,3 +112,4 @@ const VerifyEmailPage: React.FC = () => {
 };
 
 export default VerifyEmailPage;
+

@@ -9,34 +9,51 @@ import GuestDashboard from './features/dashboard/GuestDashboard';
 import UserDashboard from './features/dashboard/UserDashboard';
 import ProfilePage from './features/profile/ProfilePage';
 import ProtectedRoute from './shared/components/ProtectedRoute';
-import { useAuth } from './context/AuthContext';
+import { useAuth } from './context/useAuth';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const App: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
+      </div>
+    );
+  }
 
   return (
     <>
       <Navbar />
       <main>
         <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <GuestDashboard />} />
+          <Route
+            path="/"
+            element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <GuestDashboard />}
+          />
 
           <Route element={<AuthLayout />}>
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/verify-email" element={<VerifyEmailPage />} />
-            <Route path="/login" element={<LoginPage />} />
+            <Route
+              path="/register"
+              element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <RegisterPage />}
+            />
+            <Route
+              path="/verify-email"
+              element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <VerifyEmailPage />}
+            />
+            <Route
+              path="/login"
+              element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />}
+            />
           </Route>
 
-          {/* Protected Routes */}
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<UserDashboard />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
 
-          {/* 404 - Redirect to home */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
@@ -58,3 +75,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+

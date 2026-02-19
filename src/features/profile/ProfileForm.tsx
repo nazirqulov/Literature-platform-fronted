@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/useAuth';
 import { toast } from 'react-toastify';
 import { Loader2, User as UserIcon, Phone, Save } from 'lucide-react';
 
@@ -117,3 +117,4 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
 };
 
 export default ProfileForm;
+
