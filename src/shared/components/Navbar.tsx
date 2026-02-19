@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/useAuth';
 import { LogOut, User, Library } from 'lucide-react';
 
 const Navbar: React.FC = () => {
@@ -59,3 +59,4 @@ const Navbar: React.FC = () => {
 };
 
 export default Navbar;
+
