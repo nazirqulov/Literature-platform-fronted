@@ -37,7 +37,7 @@ const normalizeAssetUrl = (url: string) => {
 };
 
 const ProfileImageManagerComponent: React.FC = () => {
-  const { user, refreshProfileImageUrl, refreshUser } = useAuth();
+  const { refreshProfileImageUrl, refreshUser } = useAuth();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isFetching, setIsFetching] = useState(false);
@@ -145,13 +145,10 @@ const ProfileImageManagerComponent: React.FC = () => {
       try {
         const formData = new FormData();
         formData.append("profileImage", file);
-        if (user?.fullName) formData.append("fullName", user.fullName);
-        if (user?.username) formData.append("username", user.username);
-
-        await api.put("/api/update-profile", formData, {
+        await api.post("/api/me/profile-image", formData, {
           headers: {
-            ...buildAuthHeaders()
-            // "Content-Type": "multipart/form-data",
+            ...buildAuthHeaders(),
+            "Content-Type": "multipart/form-data",
           },
         });
 
@@ -172,7 +169,7 @@ const ProfileImageManagerComponent: React.FC = () => {
         uploadButtonRef.current?.focus();
       }
     },
-    [fetchCurrentProfileImage, refreshProfileImageUrl, refreshUser, user?.fullName, user?.username],
+    [fetchCurrentProfileImage, refreshProfileImageUrl, refreshUser],
   );
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {

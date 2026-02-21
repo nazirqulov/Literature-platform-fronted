@@ -48,7 +48,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-1 gap-6">
                 <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-400">To'liq ism (Full Name)</label>
                     <div className="relative">

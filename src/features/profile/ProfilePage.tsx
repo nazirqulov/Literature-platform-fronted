@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useAuth } from '../../context/useAuth';
 import ProfileInfo from './ProfileInfo';
 import ProfileForm from './ProfileForm';
-import ProfileImageManager from './ProfileImageManager';
+import ProfileImageHandler from './ProfileImageHandler';
 import BookList from './BookList';
 import { Loader2, Settings, List } from 'lucide-react';
 
@@ -41,7 +41,7 @@ const ProfilePage: React.FC = () => {
             {/* Header & Stats */}
             <div className="space-y-8">
                 <div className="flex flex-col md:flex-row gap-8 items-center bg-white/5 p-8 rounded-3xl border border-white/10 glass-dark">
-                    <ProfileImageManager />
+                    <ProfileImageHandler />
 
                     <div className="flex-grow text-center md:text-left space-y-4">
                         <div>
@@ -66,8 +66,22 @@ const ProfilePage: React.FC = () => {
             </div>
 
             <div className="grid lg:grid-cols-3 gap-12">
+                {/* Reading Lists */}
+                <div className="lg:col-span-2 space-y-10">
+                    <div className="flex items-center gap-3 border-b border-white/10 pb-4">
+                        <List className="text-amber-500" size={24} />
+                        <h2 className="text-2xl font-bold text-white">Mutolaa ro'yxati</h2>
+                    </div>
+
+                    <div className="space-y-8">
+                        <BookList title="Hozir o'qilmoqda" books={mockData.reading} />
+                        <BookList title="O'qib bo'lingan" books={mockData.read} />
+                        <BookList title="Saralangan" books={mockData.favorites} />
+                    </div>
+                </div>
+
                 {/* Settings / Edit Form */}
-                <div className="lg:col-span-2 space-y-8">
+                <div className="space-y-8">
                     <div className="flex items-center gap-3 border-b border-white/10 pb-4">
                         <Settings className="text-amber-500" size={24} />
                         <h2 className="text-2xl font-bold text-white">Profil sozlamalari</h2>
@@ -79,20 +93,6 @@ const ProfilePage: React.FC = () => {
                             username: user.username,
                             email: user.email
                         }} />
-                    </div>
-                </div>
-
-                {/* Reading Lists */}
-                <div className="space-y-10">
-                    <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-                        <List className="text-amber-500" size={24} />
-                        <h2 className="text-2xl font-bold text-white">Mutolaa ro'yxati</h2>
-                    </div>
-
-                    <div className="space-y-8">
-                        <BookList title="Hozir o'qilmoqda" books={mockData.reading} />
-                        <BookList title="O'qib bo'lingan" books={mockData.read} />
-                        <BookList title="Saralangan" books={mockData.favorites} />
                     </div>
                 </div>
             </div>
