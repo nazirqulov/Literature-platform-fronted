@@ -1,6 +1,7 @@
 import React, {
   createContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -32,6 +33,22 @@ export interface AuthContextType {
 const DEFAULT_AVATAR =
   "https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff&size=128";
 
+interface ProfileImageMetaResponse {
+  filename?: string | null;
+  url?: string | null;
+}
+
+interface ResolvedImage {
+  url: string | null;
+  isObjectUrl: boolean;
+}
+
+const normalizeAssetUrl = (url: string) => {
+  if (url.startsWith("http")) return url;
+  const baseUrl = api.defaults.baseURL ?? "http://localhost:8080";
+  return new URL(url, `${baseUrl}/`).toString();
+};
+
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined,
 );
@@ -42,9 +59,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [user, setUser] = useState<User | null>(null);
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const profileObjectUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
     void checkAuth();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (profileObjectUrlRef.current) {
+        URL.revokeObjectURL(profileObjectUrlRef.current);
+        profileObjectUrlRef.current = null;
+      }
+    };
   }, []);
 
   const clearAuthState = () => {
@@ -52,6 +79,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     localStorage.removeItem("refreshToken");
     setUser(null);
     setProfileImageUrl(null);
+    if (profileObjectUrlRef.current) {
+      URL.revokeObjectURL(profileObjectUrlRef.current);
+      profileObjectUrlRef.current = null;
+    }
   };
 
   const checkAuth = async () => {
@@ -78,22 +109,70 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     return data;
   };
 
+  const resolveImageFromBlob = async (blob: Blob): Promise<ResolvedImage> => {
+    if (blob.type.includes("application/json")) {
+      const text = await blob.text();
+      try {
+        const parsed = JSON.parse(text) as { url?: string };
+        if (parsed.url) {
+          return { url: normalizeAssetUrl(parsed.url), isObjectUrl: false };
+        }
+      } catch {
+        // Fallback to text parsing below.
+      }
+      const trimmed = text.trim();
+      return {
+        url: trimmed ? normalizeAssetUrl(trimmed) : null,
+        isObjectUrl: false,
+      };
+    }
+
+    if (blob.type.startsWith("text/")) {
+      const text = (await blob.text()).trim();
+      return { url: text ? normalizeAssetUrl(text) : null, isObjectUrl: false };
+    }
+
+    const objectUrl = URL.createObjectURL(blob);
+    return { url: objectUrl, isObjectUrl: true };
+  };
+
   const refreshProfileImageUrl = async () => {
     try {
-      const { data } = await api.get<{ url: string }>(
+      const { data } = await api.get<ProfileImageMetaResponse>(
         "/api/me/profile-image-url",
       );
-      if (data.url) {
-        const timestamp = Date.now();
-        const baseUrl = api.defaults.baseURL ?? "";
-        const normalizedUrl = data.url.startsWith("http")
-          ? data.url
-          : new URL(data.url, `${baseUrl}/`).toString();
-        const separator = normalizedUrl.includes("?") ? "&" : "?";
-        setProfileImageUrl(`${normalizedUrl}${separator}t=${timestamp}`);
-      } else {
-        setProfileImageUrl(DEFAULT_AVATAR);
+
+      const filename = data?.filename ?? null;
+      if (filename) {
+        const response = await api.get<Blob>(
+          `/api/profiles/${encodeURIComponent(filename)}`,
+          { responseType: "blob" },
+        );
+
+        const resolved = await resolveImageFromBlob(response.data);
+        if (profileObjectUrlRef.current) {
+          URL.revokeObjectURL(profileObjectUrlRef.current);
+          profileObjectUrlRef.current = null;
+        }
+
+        if (resolved.isObjectUrl) {
+          profileObjectUrlRef.current = resolved.url;
+        }
+
+        setProfileImageUrl(resolved.url ?? DEFAULT_AVATAR);
+        return;
       }
+
+      if (data?.url) {
+        if (profileObjectUrlRef.current) {
+          URL.revokeObjectURL(profileObjectUrlRef.current);
+          profileObjectUrlRef.current = null;
+        }
+        setProfileImageUrl(normalizeAssetUrl(data.url));
+        return;
+      }
+
+      setProfileImageUrl(DEFAULT_AVATAR);
     } catch (error) {
       console.error("Failed to fetch profile image URL:", error);
       setProfileImageUrl(DEFAULT_AVATAR);
@@ -130,7 +209,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const updateProfileImage = async (file: File) => {
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("profileImage", file);
     await api.post("/api/me/profile-image", formData, {
       headers: {
         "Content-Type": "multipart/form-data",

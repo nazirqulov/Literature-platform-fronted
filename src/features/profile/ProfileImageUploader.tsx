@@ -14,8 +14,6 @@ const ProfileImageUploader: React.FC = () => {
   const previewObjectUrlRef = useRef<string | null>(null);
   const serverObjectUrlRef = useRef<string | null>(null);
 
-  console.log("profileImageUrl", profileImageUrl);
-
   useEffect(() => {
     let isCancelled = false;
 
@@ -67,14 +65,14 @@ const ProfileImageUploader: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
+    const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
     if (!allowedTypes.includes(file.type)) {
       toast.error("Faqat JPEG, PNG va WEBP formatlariga ruxsat berilgan");
       return;
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("Rasm hajmi 2MB dan oshmasligi kerak");
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Rasm hajmi 5MB dan oshmasligi kerak");
       return;
     }
 
@@ -145,7 +143,7 @@ const ProfileImageUploader: React.FC = () => {
         ref={fileInputRef}
         onChange={handleFileChange}
         className="hidden"
-        accept="image/jpeg,image/png,image/webp"
+        accept="image/jpeg,image/png,image/jpg"
       />
 
       <div className="text-center">
