@@ -2,14 +2,17 @@ export interface User {
     id: number;
     username: string;
     email: string;
-    fullName?: string | null;
-    phone?: string | null;
-    profileImage?: string | null;
+    fullName: string;
+    phone: string;
+    profileImage: string;
     role: string;
     isActive: boolean;
     emailVerified: boolean;
     createdAt: string;
 }
+
+// Explicit alias for clarity when dealing with backend responses.
+export type UserResponse = User;
 
 export interface AuthResponse {
     accessToken: string;
@@ -18,9 +21,10 @@ export interface AuthResponse {
 }
 
 export interface UpdateProfileRequest {
-    fullName?: string;
-    phone?: string;
-    username?: string;
+    username: string;
+    email: string;
+    fullName: string;
+    phone: string;
 }
 
 export interface RegisterRequest {
@@ -37,4 +41,15 @@ export interface VerifyEmailRequest {
 export interface LoginRequest {
     usernameOrEmail: string;
     password?: string;
+}
+
+export type BookStatus = "reading" | "completed" | "favorite";
+
+export interface ReadingListItem {
+    id: number;
+    title: string;
+    author: string;
+    status: BookStatus;
+    progress: number; // 0-100
+    isFavorite?: boolean;
 }

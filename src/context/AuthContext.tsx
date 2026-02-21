@@ -124,8 +124,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const updateProfile = async (data: UpdateProfileRequest) => {
-    await api.post("/api/update-profile", data);
-    await refreshUser();
+    const { data: updatedUser } = await api.put<User>("/api/update-profile", data);
+    setUser(updatedUser);
   };
 
   const updateProfileImage = async (file: File) => {

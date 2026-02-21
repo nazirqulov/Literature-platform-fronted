@@ -6,7 +6,10 @@ import axios, {
 } from "axios";
 import type { AuthResponse } from "../types";
 
-const API_URL = "http://213.199.55.47:7575";
+const API_URL =
+  import.meta.env.VITE_API_URL ??
+  import.meta.env.REACT_APP_API_URL ??
+  "http://localhost:8080";
 
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useAuth } from '../../context/useAuth';
 import ProfileInfo from './ProfileInfo';
 import ProfileForm from './ProfileForm';
-import ProfileImageUploader from './ProfileImageUploader';
+import ProfileImageManager from './ProfileImageManager';
 import BookList from './BookList';
 import { Loader2, Settings, List } from 'lucide-react';
 
@@ -41,7 +41,7 @@ const ProfilePage: React.FC = () => {
             {/* Header & Stats */}
             <div className="space-y-8">
                 <div className="flex flex-col md:flex-row gap-8 items-center bg-white/5 p-8 rounded-3xl border border-white/10 glass-dark">
-                    <ProfileImageUploader />
+                    <ProfileImageManager />
 
                     <div className="flex-grow text-center md:text-left space-y-4">
                         <div>
