@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios, {
   type AxiosError,
   type AxiosInstance,
@@ -6,10 +5,7 @@ import axios, {
 } from "axios";
 import type { AuthResponse } from "../types";
 
-const API_URL =
-  import.meta.env.VITE_API_URL ??
-  import.meta.env.REACT_APP_API_URL ??
-  "http://localhost:8080";
+const API_URL = "http://localhost:8080";
 
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
@@ -23,7 +19,10 @@ const api: AxiosInstance = axios.create({
 });
 
 let isRefreshing = false;
-let failedQueue: any[] = [];
+let failedQueue: Array<{
+  resolve: (token: string | null) => void;
+  reject: (error: AxiosError | unknown) => void;
+}> = [];
 
 const processQueue = (
   error: AxiosError | null,
