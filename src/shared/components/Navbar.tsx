@@ -1,10 +1,12 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
 import { LogOut, User, Library } from 'lucide-react';
 
 const Navbar: React.FC = () => {
     const { isAuthenticated, user, logout } = useAuth();
+    const location = useLocation();
+    const isAdminRoute = location.pathname.startsWith('/admin');
 
     return (
         <nav className="sticky top-0 z-50 glass border-b border-white/10 px-4 py-3">
@@ -18,14 +20,16 @@ const Navbar: React.FC = () => {
                     </span>
                 </Link>
 
-                <div className="hidden md:flex items-center gap-6">
-                    <Link to="/" className="text-slate-300 hover:text-amber-500 transition-colors">Bosh sahifa</Link>
-                    <Link to="/books" className="text-slate-300 hover:text-amber-500 transition-colors">Kitoblar</Link>
-                    <Link to="/authors" className="text-slate-300 hover:text-amber-500 transition-colors">Mualliflar</Link>
-                    {isAuthenticated && (
-                        <Link to="/profile" className="text-slate-300 hover:text-amber-500 transition-colors italic">Profil</Link>
-                    )}
-                </div>
+                {!isAdminRoute && (
+                    <div className="hidden md:flex items-center gap-6">
+                        <Link to="/" className="text-slate-300 hover:text-amber-500 transition-colors">Bosh sahifa</Link>
+                        <Link to="/books" className="text-slate-300 hover:text-amber-500 transition-colors">Kitoblar</Link>
+                        <Link to="/authors" className="text-slate-300 hover:text-amber-500 transition-colors">Mualliflar</Link>
+                        {isAuthenticated && (
+                            <Link to="/profile" className="text-slate-300 hover:text-amber-500 transition-colors italic">Profil</Link>
+                        )}
+                    </div>
+                )}
 
                 <div className="flex items-center gap-4">
                     {isAuthenticated ? (
