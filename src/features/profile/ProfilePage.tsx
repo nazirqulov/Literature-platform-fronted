@@ -23,6 +23,8 @@ const ProfilePage: React.FC = () => {
         );
     }
 
+    const isSuperAdmin = user.role === 'SUPERADMIN' || user.role === 'ROLE_SUPERADMIN';
+
     const mockData = {
         read: [
             { title: "O'tkan kunlar", author: "Abdulla Qodiriy" },
@@ -66,22 +68,22 @@ const ProfilePage: React.FC = () => {
             </div>
 
             <div className="grid lg:grid-cols-3 gap-12">
-                {/* Reading Lists */}
-                <div className="lg:col-span-2 space-y-10">
-                    <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-                        <List className="text-amber-500" size={24} />
-                        <h2 className="text-2xl font-bold text-white">Mutolaa ro'yxati</h2>
-                    </div>
+                {!isSuperAdmin && (
+                    <div className="lg:col-span-2 space-y-10">
+                        <div className="flex items-center gap-3 border-b border-white/10 pb-4">
+                            <List className="text-amber-500" size={24} />
+                            <h2 className="text-2xl font-bold text-white">Mutolaa ro'yxati</h2>
+                        </div>
 
-                    <div className="space-y-8">
-                        <BookList title="Hozir o'qilmoqda" books={mockData.reading} />
-                        <BookList title="O'qib bo'lingan" books={mockData.read} />
-                        <BookList title="Saralangan" books={mockData.favorites} />
+                        <div className="space-y-8">
+                            <BookList title="Hozir o'qilmoqda" books={mockData.reading} />
+                            <BookList title="O'qib bo'lingan" books={mockData.read} />
+                            <BookList title="Saralangan" books={mockData.favorites} />
+                        </div>
                     </div>
-                </div>
+                )}
 
-                {/* Settings / Edit Form */}
-                <div className="space-y-8">
+                <div className={`${isSuperAdmin ? 'lg:col-span-3' : ''} space-y-8`}>
                     <div className="flex items-center gap-3 border-b border-white/10 pb-4">
                         <Settings className="text-amber-500" size={24} />
                         <h2 className="text-2xl font-bold text-white">Profil sozlamalari</h2>
