@@ -388,37 +388,37 @@ const AdminUsersPage: React.FC = () => {
                 users.map((user) => (
                   <tr key={user.id} className="bg-transparent">
                     <td className="px-3 py-2">
-                      <div className="rounded-md border border-white/10 bg-slate-950/80 px-3 py-2 text-slate-200">
+                      <div className="rounded-md border border-white/10 px-3 py-2 text-slate-200">
                         {user.id ?? "--"}
                       </div>
                     </td>
                     <td className="px-3 py-2">
-                      <div className="rounded-md border border-white/10 bg-slate-950/80 px-3 py-2 text-slate-200">
+                      <div className="rounded-md border border-white/10 px-3 py-2 text-slate-200">
                         {user.username || "--"}
                       </div>
                     </td>
                     <td className="px-3 py-2">
-                      <div className="rounded-md border border-white/10 bg-slate-950/80 px-3 py-2 text-slate-200">
+                      <div className="rounded-md border border-white/10 px-3 py-2 text-slate-200">
                         {user.email || "--"}
                       </div>
                     </td>
                     <td className="px-3 py-2">
-                      <div className="rounded-md border border-white/10 bg-slate-950/80 px-3 py-2 text-slate-200">
+                      <div className="rounded-md border border-white/10 px-3 py-2 text-slate-200">
                         {user.fullName || "--"}
                       </div>
                     </td>
                     <td className="px-3 py-2">
-                      <div className="rounded-md border border-white/10 bg-slate-950/80 px-3 py-2 text-slate-200">
+                      <div className="rounded-md border border-white/10 px-3 py-2 text-slate-200">
                         {user.phone || "--"}
                       </div>
                     </td>
                     <td className="px-3 py-2">
-                      <div className="rounded-md border border-white/10 bg-slate-950/80 px-3 py-2 text-slate-200">
+                      <div className="rounded-md border border-white/10 px-3 py-2 text-slate-200">
                         {user.role || "--"}
                       </div>
                     </td>
                     <td className="px-3 py-2">
-                      <div className="rounded-md border border-white/10 bg-slate-950/80 px-3 py-2">
+                      <div className="rounded-md border border-white/10 px-3 py-2">
                         <span
                           className={[
                             "rounded-full px-3 py-1 text-xs font-semibold",
@@ -432,7 +432,7 @@ const AdminUsersPage: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-3 py-2">
-                      <div className="flex items-center gap-2 rounded-md border border-white/10 bg-slate-950/80 px-3 py-2">
+                      <div className="flex items-center gap-2 rounded-md border border-white/10 px-3 py-2">
                         <button
                           onClick={() => startEdit(user)}
                           className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs text-slate-200 transition hover:bg-white/10"
