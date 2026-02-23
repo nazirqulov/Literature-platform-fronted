@@ -31,9 +31,14 @@ const LoginPage: React.FC = () => {
   const onSubmit = async (data: any) => {
     setIsLoading(true);
     try {
-      await login(data);
+      const loggedInUser = await login(data);
       toast.success("Xush kelibsiz!");
-      navigate("/dashboard", { replace: true });
+      const role = loggedInUser.role;
+      if (role === "SUPERADMIN" || role === "ROLE_SUPERADMIN") {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
     } catch (error: any) {
       toast.error(
         error.response?.data?.message || "Login yoki parol noto'g'ri",
