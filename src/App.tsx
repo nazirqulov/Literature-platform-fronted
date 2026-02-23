@@ -8,7 +8,13 @@ import LoginPage from './features/auth/LoginPage';
 import GuestDashboard from './features/dashboard/GuestDashboard';
 import UserDashboard from './features/dashboard/UserDashboard';
 import ProfilePage from './features/profile/ProfilePage';
+import AdminLayout from './features/admin/AdminLayout';
+import AdminDashboardPage from './features/admin/AdminDashboardPage';
+import AdminBooksPage from './features/admin/AdminBooksPage';
+import AdminUsersPage from './features/admin/AdminUsersPage';
+import AdminAuthorsPage from './features/admin/AdminAuthorsPage';
 import ProtectedRoute from './shared/components/ProtectedRoute';
+import AdminRoute from './shared/components/AdminRoute';
 import { useAuth } from './context/useAuth';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -52,6 +58,15 @@ const App: React.FC = () => {
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<UserDashboard />} />
             <Route path="/profile" element={<ProfilePage />} />
+          </Route>
+
+          <Route element={<AdminRoute />}>
+            <Route element={<AdminLayout />}>
+              <Route path="/admin" element={<AdminDashboardPage />} />
+              <Route path="/admin/books" element={<AdminBooksPage />} />
+              <Route path="/admin/users" element={<AdminUsersPage />} />
+              <Route path="/admin/authors" element={<AdminAuthorsPage />} />
+            </Route>
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

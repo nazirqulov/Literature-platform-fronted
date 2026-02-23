@@ -17,7 +17,17 @@ export type UserResponse = User;
 export interface AuthResponse {
     accessToken: string;
     refreshToken: string;
-    user: User;
+    user?: User;
+}
+
+export interface LoginResponse {
+    tokenType?: string;
+    accessToken: string;
+    refreshToken: string;
+    authorities?: string[];
+    username?: string;
+    expires_in?: number;
+    user?: User;
 }
 
 export interface UpdateProfileRequest {

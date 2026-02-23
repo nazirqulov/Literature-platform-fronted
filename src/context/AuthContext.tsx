@@ -8,6 +8,7 @@ import React, {
 import api from "../services/api";
 import type {
   AuthResponse,
+  LoginResponse,
   LoginRequest,
   RegisterRequest,
   UpdateProfileRequest,
@@ -20,7 +21,7 @@ export interface AuthContextType {
   profileImageUrl: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (data: LoginRequest) => Promise<void>;
+  login: (data: LoginRequest) => Promise<User>;
   register: (data: RegisterRequest) => Promise<void>;
   verifyEmail: (data: VerifyEmailRequest) => Promise<void>;
   logout: () => void;
@@ -180,17 +181,49 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const login = async (data: LoginRequest) => {
-    const response = await api.post<AuthResponse>("/api/login", data);
-    const { accessToken, refreshToken, user: loginUser } = response.data;
+    const response = await api.post<LoginResponse>("/api/login", data);
+    const {
+      accessToken,
+      refreshToken,
+      user: loginUser,
+      authorities,
+      username,
+    } = response.data;
 
     localStorage.setItem("accessToken", accessToken);
     localStorage.setItem("refreshToken", refreshToken);
-    setUser(loginUser);
+
+    const normalizeRole = (role?: string) =>
+      role ? role.replace(/^ROLE_/, "") : role;
+
+    const derivedRole = authorities?.some((role) => role.includes("SUPERADMIN"))
+      ? "SUPERADMIN"
+      : normalizeRole(authorities?.[0]) ?? "USER";
+
+    const fallbackUser: User = loginUser ?? {
+      id: 0,
+      username: username ?? data.usernameOrEmail,
+      email: "",
+      fullName: "",
+      phone: "",
+      profileImage: "",
+      role: derivedRole,
+      isActive: true,
+      emailVerified: true,
+      createdAt: new Date().toISOString(),
+    };
+
+    setUser(fallbackUser);
 
     try {
-      await Promise.all([refreshUser(), refreshProfileImageUrl()]);
+      const [freshUser] = await Promise.all([
+        refreshUser(),
+        refreshProfileImageUrl(),
+      ]);
+      return freshUser;
     } catch {
-      setUser(loginUser);
+      setUser(fallbackUser);
+      return fallbackUser;
     }
   };
 
