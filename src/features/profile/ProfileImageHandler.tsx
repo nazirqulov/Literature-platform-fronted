@@ -188,7 +188,7 @@ const ProfileImageHandler: React.FC = () => {
             src={displaySrc}
             alt="Profile"
             aria-label="Profile image"
-            className="w-32 h-32 rounded-full object-cover border border-gray-200 bg-gray-50"
+            className="w-32 h-32 rounded-full object-cover border border-[#E3DBCF] bg-white"
             onError={(event) => {
               (event.currentTarget as HTMLImageElement).src = FALLBACK_AVATAR;
             }}
@@ -209,7 +209,7 @@ const ProfileImageHandler: React.FC = () => {
       <div className="flex items-center gap-3">
         <label
           htmlFor="profileImageInput"
-          className="px-3 py-2 rounded-md border border-gray-300 cursor-pointer hover:bg-gray-100 transition"
+          className="px-3 py-2 rounded-md border border-[#E3DBCF] cursor-pointer hover:bg-[#EFE7DB] transition"
           aria-busy={uploading}
         >
           {uploading ? "Uploading..." : "Choose Image"}
@@ -220,3 +220,5 @@ const ProfileImageHandler: React.FC = () => {
 };
 
 export default memo(ProfileImageHandler);
+
+

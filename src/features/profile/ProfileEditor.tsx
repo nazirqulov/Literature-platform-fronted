@@ -181,9 +181,9 @@ const ProfileEditor: React.FC = () => {
 
   if (isFetching) {
     return (
-      <div className="flex min-h-[280px] flex-col items-center justify-center gap-3 rounded-3xl border border-white/5 bg-black/30">
-        <ClipLoader color="#f59e0b" size={36} />
-        <p className="text-sm text-slate-300">Profil ma'lumotlari yuklanmoqda...</p>
+      <div className="flex min-h-[280px] flex-col items-center justify-center gap-3 rounded-3xl border border-[#E3DBCF] bg-[#F5F1E8]/70">
+        <ClipLoader color="#6B4F3A" size={36} />
+        <p className="text-sm text-[#6B6B6B]">Profil ma'lumotlari yuklanmoqda...</p>
       </div>
     );
   }
@@ -201,11 +201,11 @@ const ProfileEditor: React.FC = () => {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-300" htmlFor="username">
+            <label className="text-sm font-semibold text-[#6B6B6B]" htmlFor="username">
               Foydalanuvchi nomi
             </label>
             <div className="relative">
-              <UserIcon className="pointer-events-none absolute left-3 top-2.5 text-slate-500" size={18} />
+              <UserIcon className="pointer-events-none absolute left-3 top-2.5 text-[#9A9A9A]" size={18} />
               <input
                 id="username"
                 aria-invalid={!!errors.username}
@@ -224,11 +224,11 @@ const ProfileEditor: React.FC = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-300" htmlFor="email">
+            <label className="text-sm font-semibold text-[#6B6B6B]" htmlFor="email">
               Email
             </label>
             <div className="relative">
-              <AtSign className="pointer-events-none absolute left-3 top-2.5 text-slate-500" size={18} />
+              <AtSign className="pointer-events-none absolute left-3 top-2.5 text-[#9A9A9A]" size={18} />
               <input
                 id="email"
                 type="email"
@@ -248,11 +248,11 @@ const ProfileEditor: React.FC = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-300" htmlFor="fullName">
+            <label className="text-sm font-semibold text-[#6B6B6B]" htmlFor="fullName">
               To‘liq ism
             </label>
             <div className="relative">
-              <ShieldCheck className="pointer-events-none absolute left-3 top-2.5 text-slate-500" size={18} />
+              <ShieldCheck className="pointer-events-none absolute left-3 top-2.5 text-[#9A9A9A]" size={18} />
               <input
                 id="fullName"
                 aria-invalid={!!errors.fullName}
@@ -271,11 +271,11 @@ const ProfileEditor: React.FC = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-300" htmlFor="phone">
+            <label className="text-sm font-semibold text-[#6B6B6B]" htmlFor="phone">
               Telefon raqami (ixtiyoriy)
             </label>
             <div className="relative">
-              <Phone className="pointer-events-none absolute left-3 top-2.5 text-slate-500" size={18} />
+              <Phone className="pointer-events-none absolute left-3 top-2.5 text-[#9A9A9A]" size={18} />
               <input
                 id="phone"
                 type="tel"
@@ -296,7 +296,7 @@ const ProfileEditor: React.FC = () => {
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2 text-xs text-slate-400">
+          <div className="flex items-center gap-2 text-xs text-[#6B6B6B]">
             <AlertCircle size={14} />
             Ma'lumotlar xavfsiz tarzda yangilanadi. Email va telefon tekshiruvi avtomatik.
           </div>
@@ -322,3 +322,5 @@ const ProfileEditor: React.FC = () => {
 };
 
 export default React.memo(ProfileEditor);
+
+

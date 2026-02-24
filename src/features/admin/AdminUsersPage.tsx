@@ -164,17 +164,17 @@ const AdminUsersPage: React.FC = () => {
     <section className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-white">Foydalanuvchilar</h1>
-          <p className="text-sm text-slate-400">
+          <h1 className="text-2xl font-semibold text-[#2B2B2B]">Foydalanuvchilar</h1>
+          <p className="text-sm text-[#6B6B6B]">
             Foydalanuvchilar ro'yxati va boshqaruvi.
           </p>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+      <div className="rounded-2xl border border-[#E3DBCF] bg-white p-5">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <div className="space-y-2">
-            <label className="text-xs font-medium text-slate-300">Rol</label>
+            <label className="text-xs font-medium text-[#6B6B6B]">Rol</label>
             <select
               value={filters.role}
               onChange={(event) => {
@@ -183,7 +183,7 @@ const AdminUsersPage: React.FC = () => {
                 setAppliedFilters((prev) => ({ ...prev, role: value }));
                 setPage(0);
               }}
-              className="w-full rounded-lg border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
             >
               <option value="">Tanlang</option>
               {roleOptions.map((role) => (
@@ -195,7 +195,7 @@ const AdminUsersPage: React.FC = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-medium text-slate-300">
+            <label className="text-xs font-medium text-[#6B6B6B]">
               Boshlanish sana (dd.MM.yyyy)
             </label>
             <input
@@ -207,12 +207,12 @@ const AdminUsersPage: React.FC = () => {
                 setPage(0);
               }}
               placeholder="01.01.2024"
-              className="w-full rounded-lg border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-medium text-slate-300">
+            <label className="text-xs font-medium text-[#6B6B6B]">
               Tugash sana (dd.MM.yyyy)
             </label>
             <input
@@ -224,14 +224,14 @@ const AdminUsersPage: React.FC = () => {
                 setPage(0);
               }}
               placeholder="31.12.2024"
-              className="w-full rounded-lg border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white"
+              className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
             />
           </div>
 
           <div className="flex items-end gap-3">
             <button
               onClick={resetFilters}
-              className="rounded-lg border border-white/10 px-4 py-2 text-sm text-slate-300 transition hover:bg-white/10"
+              className="rounded-lg border border-[#E3DBCF] px-4 py-2 text-sm text-[#6B6B6B] transition hover:bg-white"
             >
               Tozalash
             </button>
@@ -240,14 +240,14 @@ const AdminUsersPage: React.FC = () => {
       </div>
 
       {editingUser && (
-        <div className="rounded-2xl border border-indigo-500/30 bg-indigo-500/10 p-6">
+        <div className="rounded-2xl border border-[#6B4F3A]/30 bg-[#6B4F3A]/10 p-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">
+            <h2 className="text-lg font-semibold text-[#2B2B2B]">
               Foydalanuvchini tahrirlash
             </h2>
             <button
               onClick={cancelEdit}
-              className="text-sm text-slate-300 hover:text-white"
+              className="text-sm text-[#6B6B6B] hover:text-[#2B2B2B]"
             >
               Bekor qilish
             </button>
@@ -255,7 +255,7 @@ const AdminUsersPage: React.FC = () => {
 
           <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             <div className="space-y-2">
-              <label className="text-xs font-medium text-slate-300">Username</label>
+              <label className="text-xs font-medium text-[#6B6B6B]">Username</label>
               <input
                 value={editingUser.username}
                 onChange={(event) =>
@@ -263,11 +263,11 @@ const AdminUsersPage: React.FC = () => {
                     prev ? { ...prev, username: event.target.value } : prev,
                   )
                 }
-                className="w-full rounded-lg border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white"
+                className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-medium text-slate-300">Email</label>
+              <label className="text-xs font-medium text-[#6B6B6B]">Email</label>
               <input
                 value={editingUser.email}
                 onChange={(event) =>
@@ -275,11 +275,11 @@ const AdminUsersPage: React.FC = () => {
                     prev ? { ...prev, email: event.target.value } : prev,
                   )
                 }
-                className="w-full rounded-lg border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white"
+                className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-medium text-slate-300">Ism</label>
+              <label className="text-xs font-medium text-[#6B6B6B]">Ism</label>
               <input
                 value={editingUser.fullName}
                 onChange={(event) =>
@@ -287,11 +287,11 @@ const AdminUsersPage: React.FC = () => {
                     prev ? { ...prev, fullName: event.target.value } : prev,
                   )
                 }
-                className="w-full rounded-lg border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white"
+                className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-medium text-slate-300">Telefon</label>
+              <label className="text-xs font-medium text-[#6B6B6B]">Telefon</label>
               <input
                 value={editingUser.phone}
                 onChange={(event) =>
@@ -299,11 +299,11 @@ const AdminUsersPage: React.FC = () => {
                     prev ? { ...prev, phone: event.target.value } : prev,
                   )
                 }
-                className="w-full rounded-lg border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white"
+                className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-medium text-slate-300">Rol</label>
+              <label className="text-xs font-medium text-[#6B6B6B]">Rol</label>
               <select
                 value={editingUser.role}
                 onChange={(event) =>
@@ -311,7 +311,7 @@ const AdminUsersPage: React.FC = () => {
                     prev ? { ...prev, role: event.target.value } : prev,
                   )
                 }
-                className="w-full rounded-lg border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white"
+                className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
               >
                 {roleOptions.map((role) => (
                   <option key={role} value={role}>
@@ -321,7 +321,7 @@ const AdminUsersPage: React.FC = () => {
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-medium text-slate-300">Holati</label>
+              <label className="text-xs font-medium text-[#6B6B6B]">Holati</label>
               <select
                 value={editingUser.isActive ? "true" : "false"}
                 onChange={(event) =>
@@ -331,7 +331,7 @@ const AdminUsersPage: React.FC = () => {
                       : prev,
                   )
                 }
-                className="w-full rounded-lg border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white"
+                className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
               >
                 <option value="true">Faol</option>
                 <option value="false">Nofaol</option>
@@ -342,13 +342,13 @@ const AdminUsersPage: React.FC = () => {
           <div className="mt-5 flex items-center gap-3">
             <button
               onClick={saveEdit}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-500"
+              className="rounded-lg bg-[#6B4F3A] px-4 py-2 text-sm font-semibold text-[#F5F1E8] transition hover:bg-[#5A4030]"
             >
               Saqlash
             </button>
             <button
               onClick={cancelEdit}
-              className="rounded-lg border border-white/10 px-4 py-2 text-sm text-slate-300 transition hover:bg-white/10"
+              className="rounded-lg border border-[#E3DBCF] px-4 py-2 text-sm text-[#6B6B6B] transition hover:bg-white"
             >
               Bekor qilish
             </button>
@@ -356,86 +356,72 @@ const AdminUsersPage: React.FC = () => {
         </div>
       )}
 
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-        <div className="overflow-x-auto">
-          <table className="min-w-full border-separate border-spacing-y-3 text-sm">
+      <div className="rounded-2xl bg-[#EFE7DB]/50 p-4">
+        <div className="overflow-x-auto rounded-2xl border border-[#E3DBCF]">
+          <table className="min-w-full border-collapse text-sm">
             <thead>
-              <tr className="text-left text-xs uppercase tracking-wide text-slate-400">
-                <th className="px-3 py-2">ID</th>
-                <th className="px-3 py-2">Username</th>
-                <th className="px-3 py-2">Email</th>
-                <th className="px-3 py-2">To'liq ism</th>
-                <th className="px-3 py-2">Telefon</th>
-                <th className="px-3 py-2">Rol</th>
-                <th className="px-3 py-2">Holat</th>
-                <th className="px-3 py-2">Amallar</th>
+              <tr className="bg-[#F5F1E8] text-left text-xs uppercase tracking-wide text-[#6B6B6B]">
+                <th className="border-b border-r border-[#E3DBCF] px-4 py-4">ID</th>
+                <th className="border-b border-r border-[#E3DBCF] px-4 py-4">Username</th>
+                <th className="border-b border-r border-[#E3DBCF] px-4 py-4">Email</th>
+                <th className="border-b border-r border-[#E3DBCF] px-4 py-4">To'liq ism</th>
+                <th className="border-b border-r border-[#E3DBCF] px-4 py-4">Telefon</th>
+                <th className="border-b border-r border-[#E3DBCF] px-4 py-4">Rol</th>
+                <th className="border-b border-r border-[#E3DBCF] px-4 py-4">Holat</th>
+                <th className="border-b border-[#E3DBCF] px-4 py-4">Amallar</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-[#E3DBCF]">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="px-3 py-6 text-center text-slate-400">
+                  <td colSpan={8} className="px-4 py-6 text-center text-[#6B6B6B]">
                     Yuklanmoqda...
                   </td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-3 py-6 text-center text-slate-400">
+                  <td colSpan={8} className="px-4 py-6 text-center text-[#6B6B6B]">
                     Foydalanuvchi topilmadi.
                   </td>
                 </tr>
               ) : (
                 users.map((user) => (
-                  <tr key={user.id} className="bg-transparent">
-                    <td className="px-3 py-2">
-                      <div className="rounded-md border border-white/10 px-3 py-2 text-slate-200">
-                        {user.id ?? "--"}
-                      </div>
+                  <tr key={user.id} className="bg-[#F5F1E8]/40 hover:bg-[#EFE7DB]/60 transition">
+                    <td className="border-r border-[#E3DBCF] px-4 py-4 text-[#2B2B2B]">
+                      {user.id ?? "--"}
                     </td>
-                    <td className="px-3 py-2">
-                      <div className="rounded-md border border-white/10 px-3 py-2 text-slate-200">
-                        {user.username || "--"}
-                      </div>
+                    <td className="border-r border-[#E3DBCF] px-4 py-4 text-[#2B2B2B]">
+                      {user.username || "--"}
                     </td>
-                    <td className="px-3 py-2">
-                      <div className="rounded-md border border-white/10 px-3 py-2 text-slate-200">
-                        {user.email || "--"}
-                      </div>
+                    <td className="border-r border-[#E3DBCF] px-4 py-4 text-[#2B2B2B]">
+                      {user.email || "--"}
                     </td>
-                    <td className="px-3 py-2">
-                      <div className="rounded-md border border-white/10 px-3 py-2 text-slate-200">
-                        {user.fullName || "--"}
-                      </div>
+                    <td className="border-r border-[#E3DBCF] px-4 py-4 text-[#2B2B2B]">
+                      {user.fullName || "--"}
                     </td>
-                    <td className="px-3 py-2">
-                      <div className="rounded-md border border-white/10 px-3 py-2 text-slate-200">
-                        {user.phone || "--"}
-                      </div>
+                    <td className="border-r border-[#E3DBCF] px-4 py-4 text-[#2B2B2B]">
+                      {user.phone || "--"}
                     </td>
-                    <td className="px-3 py-2">
-                      <div className="rounded-md border border-white/10 px-3 py-2 text-slate-200">
-                        {user.role || "--"}
-                      </div>
+                    <td className="border-r border-[#E3DBCF] px-4 py-4 text-[#2B2B2B]">
+                      {user.role || "--"}
                     </td>
-                    <td className="px-3 py-2">
-                      <div className="rounded-md border border-white/10 px-3 py-2">
-                        <span
-                          className={[
-                            "rounded-full px-3 py-1 text-xs font-semibold",
-                            user.isActive
-                              ? "bg-emerald-500/15 text-emerald-300"
-                              : "bg-rose-500/15 text-rose-300",
-                          ].join(" ")}
-                        >
-                          {user.isActive ? "Faol" : "Nofaol"}
-                        </span>
-                      </div>
+                    <td className="border-r border-[#E3DBCF] px-4 py-4">
+                      <span
+                        className={[
+                          "rounded-full px-3 py-1 text-xs font-semibold",
+                          user.isActive
+                            ? "bg-emerald-500/15 text-emerald-300"
+                            : "bg-rose-500/15 text-rose-300",
+                        ].join(" ")}
+                      >
+                        {user.isActive ? "Faol" : "Nofaol"}
+                      </span>
                     </td>
-                    <td className="px-3 py-2">
-                      <div className="flex items-center gap-2 rounded-md border border-white/10 px-3 py-2">
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-2">
                         <button
                           onClick={() => startEdit(user)}
-                          className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs text-slate-200 transition hover:bg-white/10"
+                          className="inline-flex items-center gap-1 rounded-md border border-[#E3DBCF] px-2 py-1 text-xs text-[#2B2B2B] transition hover:bg-white"
                         >
                           <Pencil size={14} />
                           Tahrirlash
@@ -456,7 +442,7 @@ const AdminUsersPage: React.FC = () => {
           </table>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-300">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-[#6B6B6B]">
           <div className="flex items-center gap-2">
             <span>Ko'rsatish:</span>
             <select
@@ -465,7 +451,7 @@ const AdminUsersPage: React.FC = () => {
                 setPage(0);
                 setSize(Number(event.target.value));
               }}
-              className="rounded-lg border border-white/10 bg-slate-950 px-2 py-1 text-sm text-white"
+              className="rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-2 py-1 text-sm text-[#2B2B2B]"
             >
               {[5, 10, 20, 50].map((option) => (
                 <option key={option} value={option}>
@@ -479,7 +465,7 @@ const AdminUsersPage: React.FC = () => {
             <button
               disabled={!hasPrev}
               onClick={() => setPage((prev) => Math.max(0, prev - 1))}
-              className="rounded-md border border-white/10 px-3 py-1 text-sm transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-md border border-[#E3DBCF] px-3 py-1 text-sm transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
             >
               Oldingi
             </button>
@@ -489,7 +475,7 @@ const AdminUsersPage: React.FC = () => {
             <button
               disabled={!hasNext}
               onClick={() => setPage((prev) => prev + 1)}
-              className="rounded-md border border-white/10 px-3 py-1 text-sm transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-md border border-[#E3DBCF] px-3 py-1 text-sm transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
             >
               Keyingi
             </button>
@@ -501,3 +487,5 @@ const AdminUsersPage: React.FC = () => {
 };
 
 export default AdminUsersPage;
+
+

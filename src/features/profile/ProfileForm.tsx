@@ -50,9 +50,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 xl:grid-cols-1 gap-6">
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-400">To'liq ism (Full Name)</label>
+                    <label className="text-sm font-medium text-[#6B6B6B]">To'liq ism (Full Name)</label>
                     <div className="relative">
-                        <UserIcon className="absolute left-3 top-2.5 text-slate-500" size={18} />
+                        <UserIcon className="absolute left-3 top-2.5 text-[#9A9A9A]" size={18} />
                         <input
                             {...register('fullName')}
                             type="text"
@@ -64,9 +64,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-400">Telefon raqami</label>
+                    <label className="text-sm font-medium text-[#6B6B6B]">Telefon raqami</label>
                     <div className="relative">
-                        <Phone className="absolute left-3 top-2.5 text-slate-500" size={18} />
+                        <Phone className="absolute left-3 top-2.5 text-[#9A9A9A]" size={18} />
                         <input
                             {...register('phone')}
                             type="text"
@@ -78,21 +78,21 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-400">Foydalanuvchi nomi</label>
+                    <label className="text-sm font-medium text-[#6B6B6B]">Foydalanuvchi nomi</label>
                     <input
                         {...register('username')}
                         type="text"
-                        className="input-field bg-white/10 opacity-70 cursor-not-allowed"
+                        className="input-field bg-white opacity-70 cursor-not-allowed"
                         readOnly
                     />
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-400">Email manzili</label>
+                    <label className="text-sm font-medium text-[#6B6B6B]">Email manzili</label>
                     <input
                         value={initialData.email}
                         type="email"
-                        className="input-field bg-white/10 opacity-70 cursor-not-allowed"
+                        className="input-field bg-white opacity-70 cursor-not-allowed"
                         readOnly
                     />
                 </div>
@@ -117,4 +117,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
 };
 
 export default ProfileForm;
+
+
 

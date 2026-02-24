@@ -51,20 +51,20 @@ const LoginPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-white">Kirish</h2>
-        <p className="text-slate-400 mt-2 text-sm italic">
+        <h2 className="text-2xl font-bold text-[#2B2B2B]">Kirish</h2>
+        <p className="text-[#6B6B6B] mt-2 text-sm italic">
           O'zbek adabiyoti xazinasiga kirish
         </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-1">
+          <label className="block text-sm font-medium text-[#6B6B6B] mb-1">
             Foydalanuvchi nomi yoki Email
           </label>
           <div className="relative">
             <User
-              className="absolute left-3 top-2.5 text-slate-500"
+              className="absolute left-3 top-2.5 text-[#9A9A9A]"
               size={18}
             />
             <input
@@ -82,12 +82,12 @@ const LoginPage: React.FC = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-1">
+          <label className="block text-sm font-medium text-[#6B6B6B] mb-1">
             Parol
           </label>
           <div className="relative">
             <Lock
-              className="absolute left-3 top-2.5 text-slate-500"
+              className="absolute left-3 top-2.5 text-[#9A9A9A]"
               size={18}
             />
             <input
@@ -105,16 +105,16 @@ const LoginPage: React.FC = () => {
         </div>
 
         <div className="flex items-center justify-between text-xs">
-          <label className="flex items-center gap-2 cursor-pointer text-slate-400 hover:text-slate-300">
+          <label className="flex items-center gap-2 cursor-pointer text-[#6B6B6B] hover:text-[#6B6B6B]">
             <input
               type="checkbox"
-              className="w-4 h-4 rounded bg-white/5 border-white/10"
+              className="w-4 h-4 rounded bg-white border-[#E3DBCF]"
             />
             Eslab qolish
           </label>
           <Link
             to="/forgot-password"
-            className="text-amber-500 hover:underline"
+            className="text-[#6B4F3A] hover:underline"
           >
             Parolni unutdingizmi?
           </Link>
@@ -134,11 +134,11 @@ const LoginPage: React.FC = () => {
       </form>
 
       <div className="text-center mt-4">
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-[#6B6B6B]">
           Hisobingiz yo'qmi?{" "}
           <Link
             to="/register"
-            className="text-amber-500 hover:text-amber-400 font-medium"
+            className="text-[#6B4F3A] hover:text-[#5A4030] font-medium"
           >
             Ro'yxatdan o'tish
           </Link>
@@ -149,3 +149,5 @@ const LoginPage: React.FC = () => {
 };
 
 export default LoginPage;
+
+

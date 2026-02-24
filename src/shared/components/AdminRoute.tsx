@@ -11,8 +11,8 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ redirectPath = "/dashboard" }) 
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
+      <div className="min-h-screen flex items-center justify-center bg-[#F5F1E8]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#6B4F3A]"></div>
       </div>
     );
   }
@@ -32,3 +32,5 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ redirectPath = "/dashboard" }) 
 };
 
 export default AdminRoute;
+
+

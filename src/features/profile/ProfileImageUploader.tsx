@@ -111,7 +111,7 @@ const ProfileImageUploader: React.FC = () => {
   return (
     <div className="flex flex-col items-center gap-4">
       <div
-        className="relative group cursor-pointer w-32 h-32 rounded-full overflow-hidden border-4 border-amber-500/20 glass transition-all hover:border-amber-500/50 shadow-2xl"
+        className="relative group cursor-pointer w-32 h-32 rounded-full overflow-hidden border-4 border-[#6B4F3A]/20 glass transition-all hover:border-[#6B4F3A]/50 shadow-2xl"
         onClick={handleClick}
       >
         <img
@@ -126,11 +126,11 @@ const ProfileImageUploader: React.FC = () => {
 
         <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           {isUploading ? (
-            <Loader2 className="animate-spin text-white" size={32} />
+            <Loader2 className="animate-spin text-[#F5F1E8]" size={32} />
           ) : (
             <div className="flex flex-col items-center">
-              <Upload className="text-white" size={24} />
-              <span className="text-[10px] text-white font-bold uppercase mt-1">
+              <Upload className="text-[#F5F1E8]" size={24} />
+              <span className="text-[10px] text-[#F5F1E8] font-bold uppercase mt-1">
                 Yangilash
               </span>
             </div>
@@ -150,7 +150,7 @@ const ProfileImageUploader: React.FC = () => {
         <button
           onClick={handleClick}
           disabled={isUploading}
-          className="text-amber-500 hover:text-amber-400 text-sm font-bold uppercase tracking-widest flex items-center gap-2 transition-colors"
+          className="text-[#6B4F3A] hover:text-[#5A4030] text-sm font-bold uppercase tracking-widest flex items-center gap-2 transition-colors"
         >
           <Camera size={16} />
           Rasm tanlash
@@ -161,4 +161,6 @@ const ProfileImageUploader: React.FC = () => {
 };
 
 export default ProfileImageUploader;
+
+
 
