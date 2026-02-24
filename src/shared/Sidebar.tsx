@@ -22,8 +22,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
       className={[
         "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
         isActive
-          ? "bg-indigo-700 text-white shadow-sm"
-          : "text-gray-300 hover:bg-gray-800/70 hover:text-white",
+          ? "bg-[#6B4F3A] text-[#F5F1E8] shadow-sm"
+          : "text-[#6B6B6B] hover:bg-[#EFE7DB] hover:text-[#2B2B2B]",
       ].join(" ")}
       aria-current={isActive ? "page" : undefined}
     >
@@ -52,7 +52,7 @@ const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="sticky top-0 h-screen w-72 bg-gray-900 text-gray-200 shadow-lg">
+    <aside className="sticky top-0 h-screen w-72 bg-white text-[#2B2B2B] border-r border-[#E3DBCF]">
       <nav className="flex h-full flex-col gap-4 px-4 py-6">
         <div className="space-y-1">
           {items.map((item) => {
@@ -74,3 +74,5 @@ const Sidebar: React.FC = () => {
 };
 
 export default memo(Sidebar);
+
+

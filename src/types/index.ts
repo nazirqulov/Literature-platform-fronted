@@ -63,3 +63,5 @@ export interface ReadingListItem {
     progress: number; // 0-100
     isFavorite?: boolean;
 }
+
+

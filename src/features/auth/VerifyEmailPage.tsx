@@ -72,12 +72,12 @@ const VerifyEmailPage: React.FC = () => {
     return (
         <div className="space-y-6">
             <div className="text-center">
-                <div className="mx-auto w-12 h-12 bg-amber-500/20 rounded-full flex items-center justify-center mb-4">
-                    <Mail className="text-amber-500" size={24} />
+                <div className="mx-auto w-12 h-12 bg-[#6B4F3A]/15 rounded-full flex items-center justify-center mb-4">
+                    <Mail className="text-[#6B4F3A]" size={24} />
                 </div>
-                <h2 className="text-2xl font-bold text-white">Emailni tasdiqlash</h2>
-                <p className="text-slate-400 mt-2 text-sm">
-                    Kod <span className="text-amber-500 font-medium">{email}</span> manziliga yuborildi
+                <h2 className="text-2xl font-bold text-[#2B2B2B]">Emailni tasdiqlash</h2>
+                <p className="text-[#6B6B6B] mt-2 text-sm">
+                    Kod <span className="text-[#6B4F3A] font-medium">{email}</span> manziliga yuborildi
                 </p>
             </div>
 
@@ -92,7 +92,7 @@ const VerifyEmailPage: React.FC = () => {
                             value={data}
                             onChange={(e) => handleChange(e.target, index)}
                             onKeyDown={(e) => handleKeyDown(e, index)}
-                            className="w-12 h-14 text-center text-xl font-bold bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-amber-500 transition-all focus:ring-1 focus:ring-amber-500/50"
+                            className="w-12 h-14 text-center text-xl font-bold bg-white border border-[#E3DBCF] rounded-xl text-[#2B2B2B] focus:outline-none focus:border-[#6B4F3A] transition-all focus:ring-1 focus:ring-[#6B4F3A]/30"
                         />
                     ))}
                 </div>
@@ -102,7 +102,7 @@ const VerifyEmailPage: React.FC = () => {
                 </button>
 
                 <div className="text-center">
-                    <button type="button" className="text-sm text-slate-400 hover:text-amber-500 transition-colors">
+                    <button type="button" className="text-sm text-[#6B6B6B] hover:text-[#6B4F3A] transition-colors">
                         Kodni qayta yuborish
                     </button>
                 </div>
@@ -112,4 +112,6 @@ const VerifyEmailPage: React.FC = () => {
 };
 
 export default VerifyEmailPage;
+
+
 

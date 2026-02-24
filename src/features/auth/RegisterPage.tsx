@@ -43,15 +43,15 @@ const RegisterPage: React.FC = () => {
     return (
         <div className="space-y-6">
             <div className="text-center">
-                <h2 className="text-2xl font-bold text-white">Ro'yxatdan o'tish</h2>
-                <p className="text-slate-400 mt-2 text-sm italic">O'zbek adabiyoti olamiga xush kelibsiz</p>
+                <h2 className="text-2xl font-bold text-[#2B2B2B]">Ro'yxatdan o'tish</h2>
+                <p className="text-[#6B6B6B] mt-2 text-sm italic">O'zbek adabiyoti olamiga xush kelibsiz</p>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Foydalanuvchi nomi</label>
+                    <label className="block text-sm font-medium text-[#6B6B6B] mb-1">Foydalanuvchi nomi</label>
                     <div className="relative">
-                        <User className="absolute left-3 top-2.5 text-slate-500" size={18} />
+                        <User className="absolute left-3 top-2.5 text-[#9A9A9A]" size={18} />
                         <input
                             {...register('username')}
                             type="text"
@@ -63,9 +63,9 @@ const RegisterPage: React.FC = () => {
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Email</label>
+                    <label className="block text-sm font-medium text-[#6B6B6B] mb-1">Email</label>
                     <div className="relative">
-                        <Mail className="absolute left-3 top-2.5 text-slate-500" size={18} />
+                        <Mail className="absolute left-3 top-2.5 text-[#9A9A9A]" size={18} />
                         <input
                             {...register('email')}
                             type="email"
@@ -77,9 +77,9 @@ const RegisterPage: React.FC = () => {
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Parol</label>
+                    <label className="block text-sm font-medium text-[#6B6B6B] mb-1">Parol</label>
                     <div className="relative">
-                        <Lock className="absolute left-3 top-2.5 text-slate-500" size={18} />
+                        <Lock className="absolute left-3 top-2.5 text-[#9A9A9A]" size={18} />
                         <input
                             {...register('password')}
                             type="password"
@@ -91,9 +91,9 @@ const RegisterPage: React.FC = () => {
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Parolni tasdiqlash</label>
+                    <label className="block text-sm font-medium text-[#6B6B6B] mb-1">Parolni tasdiqlash</label>
                     <div className="relative">
-                        <Lock className="absolute left-3 top-2.5 text-slate-500" size={18} />
+                        <Lock className="absolute left-3 top-2.5 text-[#9A9A9A]" size={18} />
                         <input
                             {...register('confirmPassword')}
                             type="password"
@@ -110,9 +110,9 @@ const RegisterPage: React.FC = () => {
             </form>
 
             <div className="text-center mt-4">
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-[#6B6B6B]">
                     Hisobingiz bormi?{' '}
-                    <Link to="/login" className="text-amber-500 hover:text-amber-400 font-medium">
+                    <Link to="/login" className="text-[#6B4F3A] hover:text-[#5A4030] font-medium">
                         Kirish
                     </Link>
                 </p>
@@ -122,4 +122,6 @@ const RegisterPage: React.FC = () => {
 };
 
 export default RegisterPage;
+
+
 

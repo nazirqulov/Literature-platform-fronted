@@ -17,8 +17,8 @@ const ProfilePage: React.FC = () => {
 
     if (isLoading || !user) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-950">
-                <Loader2 className="animate-spin text-amber-500" size={48} />
+            <div className="min-h-screen flex items-center justify-center bg-[#F5F1E8]">
+                <Loader2 className="animate-spin text-[#6B4F3A]" size={48} />
             </div>
         );
     }
@@ -42,22 +42,22 @@ const ProfilePage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 py-12 space-y-12 animate-fade-in">
             {/* Header & Stats */}
             <div className="space-y-8">
-                <div className="flex flex-col md:flex-row gap-8 items-center bg-white/5 p-8 rounded-3xl border border-white/10 glass-dark">
+                <div className="flex flex-col md:flex-row gap-8 items-center bg-white p-8 rounded-3xl border border-[#E3DBCF] glass-dark">
                     <ProfileImageHandler />
 
                     <div className="flex-grow text-center md:text-left space-y-4">
                         <div>
-                            <h1 className="text-3xl font-bold text-white uppercase tracking-tight">
+                            <h1 className="text-3xl font-bold text-[#2B2B2B] uppercase tracking-tight">
                                 {user.fullName || user.username}
                             </h1>
-                            <p className="text-slate-400 font-mono text-sm">{user.email}</p>
+                            <p className="text-[#6B6B6B] font-mono text-sm">{user.email}</p>
                         </div>
 
                         <div className="flex flex-wrap justify-center md:justify-start gap-4">
                             <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest ${user.isActive ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
                                 {user.isActive ? 'Faol' : 'Nofaol'}
                             </span>
-                            <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                            <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-[#6B4F3A]/10 text-[#6B4F3A] border border-[#6B4F3A]/20">
                                 {user.role}
                             </span>
                         </div>
@@ -70,9 +70,9 @@ const ProfilePage: React.FC = () => {
             <div className="grid lg:grid-cols-3 gap-12">
                 {!isSuperAdmin && (
                     <div className="lg:col-span-2 space-y-10">
-                        <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-                            <List className="text-amber-500" size={24} />
-                            <h2 className="text-2xl font-bold text-white">Mutolaa ro'yxati</h2>
+                        <div className="flex items-center gap-3 border-b border-[#E3DBCF] pb-4">
+                            <List className="text-[#6B4F3A]" size={24} />
+                            <h2 className="text-2xl font-bold text-[#2B2B2B]">Mutolaa ro'yxati</h2>
                         </div>
 
                         <div className="space-y-8">
@@ -84,11 +84,11 @@ const ProfilePage: React.FC = () => {
                 )}
 
                 <div className={`${isSuperAdmin ? 'lg:col-span-3' : ''} space-y-8`}>
-                    <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-                        <Settings className="text-amber-500" size={24} />
-                        <h2 className="text-2xl font-bold text-white">Profil sozlamalari</h2>
+                    <div className="flex items-center gap-3 border-b border-[#E3DBCF] pb-4">
+                        <Settings className="text-[#6B4F3A]" size={24} />
+                        <h2 className="text-2xl font-bold text-[#2B2B2B]">Profil sozlamalari</h2>
                     </div>
-                    <div className="glass-dark p-8 rounded-3xl border border-white/5">
+                    <div className="glass-dark p-8 rounded-3xl border border-[#E3DBCF]">
                         <ProfileForm initialData={{
                             fullName: user.fullName,
                             phone: user.phone,
@@ -103,4 +103,6 @@ const ProfilePage: React.FC = () => {
 };
 
 export default ProfilePage;
+
+
 

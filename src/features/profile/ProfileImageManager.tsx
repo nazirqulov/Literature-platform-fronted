@@ -205,7 +205,7 @@ const ProfileImageManagerComponent: React.FC = () => {
         type="button"
         onClick={() => fileInputRef.current?.click()}
         aria-label="Profile image uploader"
-        className="relative group h-32 w-32 overflow-hidden rounded-full border-4 border-[var(--accent-soft)]/30 bg-[var(--surface-2)] shadow-xl hover:border-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+        className="relative group h-32 w-32 overflow-hidden rounded-full border-4 border-[#6B4F3A]/30 bg-white shadow-xl hover:border-[#6B4F3A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6B4F3A]"
       >
         <img
           src={selectedImage}
@@ -219,7 +219,7 @@ const ProfileImageManagerComponent: React.FC = () => {
           {isFetching || isUploading ? (
             <ClipLoader size={24} color="#ffffff" aria-label="Profile image loading indicator" />
           ) : (
-            <Upload size={18} className="text-white" />
+            <Upload size={18} className="text-[#F5F1E8]" />
           )}
         </div>
       </button>
@@ -238,7 +238,7 @@ const ProfileImageManagerComponent: React.FC = () => {
         type="button"
         onClick={() => fileInputRef.current?.click()}
         disabled={isFetching || isUploading}
-        className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[var(--accent)] transition-colors hover:text-[var(--accent-soft)] disabled:cursor-not-allowed disabled:opacity-70"
+        className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[#6B4F3A] transition-colors hover:text-[#5A4030] disabled:cursor-not-allowed disabled:opacity-70"
       >
         <Camera size={16} />
         Upload image
@@ -250,3 +250,5 @@ const ProfileImageManagerComponent: React.FC = () => {
 const ProfileImageManager = memo(ProfileImageManagerComponent);
 
 export default ProfileImageManager;
+
+
