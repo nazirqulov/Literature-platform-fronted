@@ -158,7 +158,13 @@ const AdminUsersPage: React.FC = () => {
   const hasNext = page + 1 < totalPages;
 
   const startEdit = (user: UserResponse) => {
-    setEditingUser({ ...user });
+    setEditingUser({
+      ...user,
+      username: user.username ?? "",
+      email: user.email ?? "",
+      fullName: user.fullName ?? "",
+      phone: user.phone ?? "",
+    });
   };
 
   const cancelEdit = () => {
@@ -356,7 +362,7 @@ const AdminUsersPage: React.FC = () => {
             <div className="space-y-2">
               <label className="text-xs font-medium text-[#6B6B6B]">Username</label>
               <input
-                value={editingUser.username}
+                value={editingUser.username ?? ""}
                 onChange={(event) =>
                   setEditingUser((prev) =>
                     prev ? { ...prev, username: event.target.value } : prev,
@@ -368,7 +374,8 @@ const AdminUsersPage: React.FC = () => {
             <div className="space-y-2">
               <label className="text-xs font-medium text-[#6B6B6B]">Email</label>
               <input
-                value={editingUser.email}
+                type="email"
+                value={editingUser.email ?? ""}
                 onChange={(event) =>
                   setEditingUser((prev) =>
                     prev ? { ...prev, email: event.target.value } : prev,
@@ -380,7 +387,7 @@ const AdminUsersPage: React.FC = () => {
             <div className="space-y-2">
               <label className="text-xs font-medium text-[#6B6B6B]">Ism</label>
               <input
-                value={editingUser.fullName}
+                value={editingUser.fullName ?? ""}
                 onChange={(event) =>
                   setEditingUser((prev) =>
                     prev ? { ...prev, fullName: event.target.value } : prev,
@@ -392,7 +399,7 @@ const AdminUsersPage: React.FC = () => {
             <div className="space-y-2">
               <label className="text-xs font-medium text-[#6B6B6B]">Telefon</label>
               <input
-                value={editingUser.phone}
+                value={editingUser.phone ?? ""}
                 onChange={(event) =>
                   setEditingUser((prev) =>
                     prev ? { ...prev, phone: event.target.value } : prev,

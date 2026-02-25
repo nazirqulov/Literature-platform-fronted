@@ -20,14 +20,14 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
     <Link
       to={to}
       className={[
-        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+        "flex items-center gap-3 rounded-lg px-4 py-2.5 text-base font-semibold transition-colors",
         isActive
           ? "bg-[#6B4F3A] text-[#F5F1E8] shadow-sm"
           : "text-[#6B6B6B] hover:bg-[#EFE7DB] hover:text-[#2B2B2B]",
       ].join(" ")}
       aria-current={isActive ? "page" : undefined}
     >
-      <span className="text-lg">{icon}</span>
+      <span className="text-xl">{icon}</span>
       <span>{label}</span>
     </Link>
   );
@@ -45,10 +45,10 @@ const Sidebar: React.FC = () => {
   }
 
   const items = [
-    { to: "/admin/books", label: "Kitoblar", icon: <BookOpen size={18} /> },
-    { to: "/admin/users", label: "Foydalanuvchilar", icon: <Users size={18} /> },
-    { to: "/profile", label: "Profil", icon: <User size={18} /> },
-    { to: "/admin/authors", label: "Autorlar", icon: <UserPen size={18} /> },
+    { to: "/admin/books", label: "Kitoblar", icon: <BookOpen size={20} /> },
+    { to: "/admin/users", label: "Foydalanuvchilar", icon: <Users size={20} /> },
+    { to: "/admin/profile", label: "Profil", icon: <User size={20} /> },
+    { to: "/admin/authors", label: "Autorlar", icon: <UserPen size={20} /> },
   ];
 
   return (

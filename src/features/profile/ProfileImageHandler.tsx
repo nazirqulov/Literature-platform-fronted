@@ -20,7 +20,6 @@ const FALLBACK_AVATAR =
 const ProfileImageHandler: React.FC = () => {
   const { user, refreshUser } = useAuth();
   const [imageSrc, setImageSrc] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -134,7 +133,6 @@ const ProfileImageHandler: React.FC = () => {
       });
 
       toast.success("Profile image uploaded.");
-      setSelectedFile(null);
       revokeObjectUrl(previewObjectUrlRef);
       setPreviewUrl(null);
 
@@ -168,7 +166,6 @@ const ProfileImageHandler: React.FC = () => {
       return;
     }
 
-    setSelectedFile(file);
     revokeObjectUrl(previewObjectUrlRef);
     const nextPreview = URL.createObjectURL(file);
     previewObjectUrlRef.current = nextPreview;

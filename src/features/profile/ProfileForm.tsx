@@ -8,8 +8,15 @@ import { Loader2, User as UserIcon, Phone, Save } from 'lucide-react';
 
 const schema = yup.object().shape({
     fullName: yup.string().nullable().min(3, 'Kamida 3 ta belgi bo\'lishi kerak'),
-    phone: yup.string().nullable().matches(/^\+?[0-9]{7,15}$/, { message: 'Telefon raqami noto\'g\'ri formatda', excludeEmptyString: true }),
+    phone: yup
+        .string()
+        .nullable()
+        .matches(/^\+?[0-9]{7,15}$/, {
+            message: 'Telefon raqami noto\'g\'ri formatda',
+            excludeEmptyString: true,
+        }),
     username: yup.string().required('Username shart'),
+    email: yup.string().required('Email shart').email('Email formati noto\'g\'ri'),
 });
 
 interface ProfileFormProps {
@@ -31,6 +38,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
             fullName: initialData.fullName || '',
             phone: initialData.phone || '',
             username: initialData.username,
+            email: initialData.email,
         },
     });
 
@@ -82,19 +90,19 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
                     <input
                         {...register('username')}
                         type="text"
-                        className="input-field bg-white opacity-70 cursor-not-allowed"
-                        readOnly
+                        className="input-field"
                     />
+                    {errors.username && <p className="text-red-400 text-xs">{errors.username.message}</p>}
                 </div>
 
                 <div className="space-y-2">
                     <label className="text-sm font-medium text-[#6B6B6B]">Email manzili</label>
                     <input
-                        value={initialData.email}
+                        {...register('email')}
                         type="email"
-                        className="input-field bg-white opacity-70 cursor-not-allowed"
-                        readOnly
+                        className="input-field"
                     />
+                    {errors.email && <p className="text-red-400 text-xs">{errors.email.message}</p>}
                 </div>
             </div>
 
