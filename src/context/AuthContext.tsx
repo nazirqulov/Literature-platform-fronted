@@ -7,7 +7,6 @@ import React, {
 } from "react";
 import api from "../services/api";
 import type {
-  AuthResponse,
   LoginResponse,
   LoginRequest,
   RegisterRequest,

@@ -67,6 +67,7 @@ const App: React.FC = () => {
               <Route path="/admin" element={<AdminDashboardPage />} />
               <Route path="/admin/books" element={<AdminBooksPage />} />
               <Route path="/admin/users" element={<AdminUsersPage />} />
+              <Route path="/admin/profile" element={<ProfilePage />} />
               <Route path="/admin/authors" element={<AdminAuthorsPage />} />
             </Route>
           </Route>

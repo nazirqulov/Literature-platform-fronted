@@ -49,11 +49,12 @@ const ProfileEditor: React.FC = () => {
         fullName: yup.string().required("To'liq ism shart").min(3, "Kamida 3 ta belgi"),
         phone: yup
           .string()
+          .nullable()
           .optional()
           .test("uz-phone", "Telefon raqami +998 bilan boshlanishi va 12 ta belgi bo'lishi kerak", (value) =>
             !value || uzbekPhoneRegex.test(value),
           ),
-      }),
+      }) as yup.ObjectSchema<UpdateProfileRequest>,
     [],
   );
 
@@ -96,7 +97,7 @@ const ProfileEditor: React.FC = () => {
           username: data.username ?? "",
           email: data.email ?? "",
           fullName: data.fullName ?? "",
-          phone: data.phone ?? "",
+          phone: data.phone ?? undefined,
         });
       } catch (error) {
         if (!active) return;
