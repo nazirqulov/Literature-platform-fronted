@@ -16,11 +16,13 @@ import AdminAuthorsPage from './features/admin/AdminAuthorsPage';
 import ProtectedRoute from './shared/components/ProtectedRoute';
 import AdminRoute from './shared/components/AdminRoute';
 import { useAuth } from './context/useAuth';
+import { useTheme } from './context/useTheme';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const App: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
+  const { theme } = useTheme();
 
   if (isLoading) {
     return (
@@ -83,7 +85,7 @@ const App: React.FC = () => {
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="light"
+        theme={theme === 'dark' ? 'dark' : 'light'}
       />
     </>
   );

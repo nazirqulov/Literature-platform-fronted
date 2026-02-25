@@ -1,10 +1,12 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
-import { LogOut, User, Library } from 'lucide-react';
+import { LogOut, User, Library, Moon, Sun } from 'lucide-react';
+import { useTheme } from '../../context/useTheme';
 
 const Navbar: React.FC = () => {
     const { isAuthenticated, user, logout } = useAuth();
+    const { theme, setTheme } = useTheme();
     const location = useLocation();
     const isAdminRoute = location.pathname.startsWith('/admin');
 
@@ -32,6 +34,32 @@ const Navbar: React.FC = () => {
                 )}
 
                 <div className="flex items-center gap-4">
+                    <div className="flex items-center rounded-full border border-[#E3DBCF] bg-white p-1 text-xs">
+                        <button
+                            onClick={() => setTheme('light')}
+                            className={[
+                                'flex items-center gap-1 rounded-full px-3 py-1.5 font-semibold transition',
+                                theme === 'light'
+                                    ? 'bg-[#6B4F3A] text-[#F5F1E8]'
+                                    : 'text-[#6B6B6B] hover:text-[#2B2B2B]',
+                            ].join(' ')}
+                            aria-pressed={theme === 'light'}
+                        >
+                            <Sun size={14} /> Yorug'
+                        </button>
+                        <button
+                            onClick={() => setTheme('dark')}
+                            className={[
+                                'flex items-center gap-1 rounded-full px-3 py-1.5 font-semibold transition',
+                                theme === 'dark'
+                                    ? 'bg-[#6B4F3A] text-[#F5F1E8]'
+                                    : 'text-[#6B6B6B] hover:text-[#2B2B2B]',
+                            ].join(' ')}
+                            aria-pressed={theme === 'dark'}
+                        >
+                            <Moon size={14} /> Qorong'u
+                        </button>
+                    </div>
                     {isAuthenticated ? (
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-[#E3DBCF]">
