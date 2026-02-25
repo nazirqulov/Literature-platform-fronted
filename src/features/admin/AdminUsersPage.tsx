@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import { Pencil, Trash2 } from "lucide-react";
+import type { AxiosError } from "axios";
 import api from "../../services/api";
 
 interface UserResponse {
@@ -13,12 +14,48 @@ interface UserResponse {
   isActive: boolean;
 }
 
+interface CreateUserPayload {
+  username: string;
+  email: string;
+  password: string;
+  fullName?: string;
+  phone?: string;
+  role?: string;
+  isActive?: boolean;
+}
+
+interface CreateUserFormState {
+  username: string;
+  email: string;
+  password: string;
+  fullName: string;
+  phone: string;
+  role: string;
+  isActive: boolean;
+}
+
 type PagedResponse<T> = {
   content?: T[];
   totalPages?: number;
   totalElements?: number;
   number?: number;
   size?: number;
+};
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  const axiosError = error as AxiosError;
+  const data = axiosError.response?.data as
+    | { message?: string; errors?: Record<string, string> }
+    | string
+    | undefined;
+
+  if (!data) return fallback;
+  if (typeof data === "string") return data;
+  if (typeof data.message === "string") return data.message;
+  if (data.errors && typeof data.errors === "object") {
+    return Object.values(data.errors).join(" ");
+  }
+  return fallback;
 };
 
 const normalizeUsers = (data: unknown) => {
@@ -60,6 +97,16 @@ const AdminUsersPage: React.FC = () => {
   });
   const [appliedFilters, setAppliedFilters] = useState(filters);
   const [editingUser, setEditingUser] = useState<UserResponse | null>(null);
+  const [newUser, setNewUser] = useState<CreateUserFormState>({
+    username: "",
+    email: "",
+    fullName: "",
+    phone: "",
+    role: "",
+    isActive: true,
+    password: "",
+  });
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   const fetchRoles = useCallback(async () => {
     try {
@@ -118,6 +165,27 @@ const AdminUsersPage: React.FC = () => {
     setEditingUser(null);
   };
 
+  const resetNewUser = () => {
+    setNewUser({
+      username: "",
+      email: "",
+      fullName: "",
+      phone: "",
+      role: "",
+      isActive: true,
+      password: "",
+    });
+  };
+
+  const openCreateModal = () => {
+    setIsCreateOpen(true);
+  };
+
+  const closeCreateModal = () => {
+    setIsCreateOpen(false);
+    resetNewUser();
+  };
+
   const saveEdit = async () => {
     if (!editingUser) return;
     try {
@@ -137,6 +205,33 @@ const AdminUsersPage: React.FC = () => {
       await fetchUsers();
     } catch {
       toast.error("Yangilashda xatolik yuz berdi.");
+    }
+  };
+
+  const createUser = async () => {
+    if (!newUser.username || !newUser.email || !newUser.password) {
+      toast.error("Username, email va parol majburiy.");
+      return;
+    }
+
+    try {
+      const payload: CreateUserPayload = {
+        username: newUser.username,
+        email: newUser.email,
+        password: newUser.password,
+        ...(newUser.fullName ? { fullName: newUser.fullName } : {}),
+        ...(newUser.phone ? { phone: newUser.phone } : {}),
+        ...(newUser.role ? { role: newUser.role } : {}),
+        isActive: newUser.isActive,
+      };
+
+      await api.post("/api/user/create", payload);
+      toast.success("Foydalanuvchi yaratildi.");
+      resetNewUser();
+      setIsCreateOpen(false);
+      await fetchUsers();
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Foydalanuvchi yaratishda xatolik yuz berdi."));
     }
   };
 
@@ -169,8 +264,13 @@ const AdminUsersPage: React.FC = () => {
             Foydalanuvchilar ro'yxati va boshqaruvi.
           </p>
         </div>
+        <button
+          onClick={openCreateModal}
+          className="rounded-lg bg-[#6B4F3A] px-4 py-2 text-sm font-semibold text-[#F5F1E8] transition hover:bg-[#5A4030]"
+        >
+          Foydalanuvchi qo'shish
+        </button>
       </div>
-
       <div className="rounded-2xl border border-[#E3DBCF] bg-white p-5">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <div className="space-y-2">
@@ -238,7 +338,6 @@ const AdminUsersPage: React.FC = () => {
           </div>
         </div>
       </div>
-
       {editingUser && (
         <div className="rounded-2xl border border-[#6B4F3A]/30 bg-[#6B4F3A]/10 p-6">
           <div className="flex items-center justify-between">
@@ -482,6 +581,136 @@ const AdminUsersPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {isCreateOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-3xl rounded-2xl border border-[#E3DBCF] bg-white p-6 shadow-xl">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold text-[#2B2B2B]">
+                  Yangi foydalanuvchi qo'shish
+                </h2>
+                <p className="text-sm text-[#6B6B6B]">
+                  Username, email va parol majburiy. Qolganlari ixtiyoriy.
+                </p>
+              </div>
+              <button
+                onClick={closeCreateModal}
+                className="rounded-lg border border-[#E3DBCF] px-3 py-1 text-sm text-[#6B6B6B] transition hover:bg-white"
+              >
+                Yopish
+              </button>
+            </div>
+
+            <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-[#6B6B6B]">Username</label>
+                <input
+                  value={newUser.username}
+                  onChange={(event) =>
+                    setNewUser((prev) => ({ ...prev, username: event.target.value }))
+                  }
+                  className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
+                  placeholder="foydalanuvchi123"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-[#6B6B6B]">To'liq ism</label>
+                <input
+                  value={newUser.fullName}
+                  onChange={(event) =>
+                    setNewUser((prev) => ({ ...prev, fullName: event.target.value }))
+                  }
+                  className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
+                  placeholder="Ism Familiya"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-[#6B6B6B]">Email</label>
+                <input
+                  value={newUser.email}
+                  onChange={(event) =>
+                    setNewUser((prev) => ({ ...prev, email: event.target.value }))
+                  }
+                  className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
+                  placeholder="user@example.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-[#6B6B6B]">Telefon</label>
+                <input
+                  value={newUser.phone}
+                  onChange={(event) =>
+                    setNewUser((prev) => ({ ...prev, phone: event.target.value }))
+                  }
+                  className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
+                  placeholder="+998 xx xxx xx xx"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-[#6B6B6B]">Rol</label>
+                <select
+                  value={newUser.role}
+                  onChange={(event) =>
+                    setNewUser((prev) => ({ ...prev, role: event.target.value }))
+                  }
+                  className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
+                >
+                  <option value="">Tanlang</option>
+                  {roleOptions.map((role) => (
+                    <option key={role} value={role}>
+                      {role}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-[#6B6B6B]">Holat</label>
+                <select
+                  value={newUser.isActive ? "true" : "false"}
+                  onChange={(event) =>
+                    setNewUser((prev) => ({
+                      ...prev,
+                      isActive: event.target.value === "true",
+                    }))
+                  }
+                  className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
+                >
+                  <option value="true">Faol</option>
+                  <option value="false">Nofaol</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-[#6B6B6B]">Parol</label>
+                <input
+                  type="password"
+                  value={newUser.password}
+                  onChange={(event) =>
+                    setNewUser((prev) => ({ ...prev, password: event.target.value }))
+                  }
+                  className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
+                  placeholder="parol"
+                />
+              </div>
+            </div>
+
+            <div className="mt-5 flex items-center justify-end gap-3">
+              <button
+                onClick={closeCreateModal}
+                className="rounded-lg border border-[#E3DBCF] px-4 py-2 text-sm text-[#6B6B6B] transition hover:bg-white"
+              >
+                Bekor qilish
+              </button>
+              <button
+                onClick={createUser}
+                className="rounded-lg bg-[#6B4F3A] px-4 py-2 text-sm font-semibold text-[#F5F1E8] transition hover:bg-[#5A4030]"
+              >
+                Yaratish
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

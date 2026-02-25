@@ -126,11 +126,11 @@ const ProfileImageUploader: React.FC = () => {
 
         <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           {isUploading ? (
-            <Loader2 className="animate-spin text-[#F5F1E8]" size={32} />
+            <Loader2 className="animate-spin text-white" size={32} />
           ) : (
             <div className="flex flex-col items-center">
-              <Upload className="text-[#F5F1E8]" size={24} />
-              <span className="text-[10px] text-[#F5F1E8] font-bold uppercase mt-1">
+              <Upload className="text-white" size={24} />
+              <span className="text-[10px] text-white font-bold uppercase mt-1">
                 Yangilash
               </span>
             </div>

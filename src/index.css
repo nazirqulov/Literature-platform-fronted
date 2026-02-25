@@ -109,6 +109,9 @@
   .dark .text-\[\#2B2B2B\] {
     color: var(--color-text);
   }
+  .dark .text-\[\#F5F1E8\] {
+    color: var(--color-background);
+  }
   .dark .text-\[\#6B6B6B\] {
     color: var(--color-text-secondary);
   }
@@ -147,6 +150,12 @@
   .dark .bg-\[\#6B4F3A\]\/50 {
     background-color: rgba(194, 169, 138, 0.5);
   }
+  .dark .bg-\[\#5A4030\] {
+    background-color: var(--color-primary-hover);
+  }
+  .dark .text-\[\#5A4030\] {
+    color: var(--color-primary-hover);
+  }
   .dark .text-\[\#6B4F3A\] {
     color: var(--color-primary);
   }
@@ -176,6 +185,9 @@
   }
   .dark .hover\:text-\[\#6B4F3A\]:hover {
     color: var(--color-primary);
+  }
+  .dark .hover\:text-\[\#2B2B2B\]:hover {
+    color: var(--color-text);
   }
   .dark .hover\:text-\[\#5A4030\]:hover {
     color: var(--color-primary-hover);
@@ -237,8 +249,15 @@
   .dark .bg-\[\#EFE7DB\]\/60 {
     background-color: rgba(42, 42, 42, 0.6);
   }
+  .dark .bg-\[\#EFE7DB\]\/50 {
+    background-color: rgba(42, 42, 42, 0.5);
+  }
   .dark .hover\:bg-\[\#EFE7DB\]:hover {
     background-color: rgba(42, 42, 42, 0.8);
+  }
+
+  .dark .btn-primary {
+    color: #1e1e1e;
   }
 }
 

@@ -219,7 +219,7 @@ const ProfileImageManagerComponent: React.FC = () => {
           {isFetching || isUploading ? (
             <ClipLoader size={24} color="#ffffff" aria-label="Profile image loading indicator" />
           ) : (
-            <Upload size={18} className="text-[#F5F1E8]" />
+            <Upload size={18} className="text-white" />
           )}
         </div>
       </button>
