@@ -1,5 +1,5 @@
 import React from "react";
-import { BookOpen, Users, UserPen } from "lucide-react";
+import { BookOpen, Users, UserPen, Tags } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const AdminDashboardPage: React.FC = () => {
@@ -21,6 +21,12 @@ const AdminDashboardPage: React.FC = () => {
       description: "Mualliflar profillari va ma'lumotlarini boshqarish.",
       to: "/admin/authors",
       icon: <UserPen size={22} className="text-[#8FA68E]" />,
+    },
+    {
+      title: "Categoryni boshqarish",
+      description: "Categorylar ro'yxati va tasniflarni boshqarish.",
+      to: "/admin/categories",
+      icon: <Tags size={22} className="text-[#8FA68E]" />,
     },
   ];
 
