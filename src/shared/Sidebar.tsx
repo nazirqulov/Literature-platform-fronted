@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { BookOpen, Users, UserPen, User } from "lucide-react";
+import { BookOpen, Users, UserPen, User, Tags } from "lucide-react";
 import { useAuth } from "../context/useAuth";
 
 type SidebarItemProps = {
@@ -48,6 +48,7 @@ const Sidebar: React.FC = () => {
     { to: "/admin/books", label: "Kitoblar", icon: <BookOpen size={20} /> },
     { to: "/admin/users", label: "Foydalanuvchilar", icon: <Users size={20} /> },
     { to: "/admin/profile", label: "Profil", icon: <User size={20} /> },
+    { to: "/admin/categories", label: "Categoryni boshqarish", icon: <Tags size={20} /> },
     { to: "/admin/authors", label: "Autorlar", icon: <UserPen size={20} /> },
   ];
 

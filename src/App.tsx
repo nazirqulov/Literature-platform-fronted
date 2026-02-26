@@ -13,6 +13,7 @@ import AdminDashboardPage from './features/admin/AdminDashboardPage';
 import AdminBooksPage from './features/admin/AdminBooksPage';
 import AdminUsersPage from './features/admin/AdminUsersPage';
 import AdminAuthorsPage from './features/admin/AdminAuthorsPage';
+import AdminCategoriesPage from './features/admin/AdminCategoriesPage';
 import ProtectedRoute from './shared/components/ProtectedRoute';
 import AdminRoute from './shared/components/AdminRoute';
 import { useAuth } from './context/useAuth';
@@ -69,6 +70,7 @@ const App: React.FC = () => {
               <Route path="/admin/users" element={<AdminUsersPage />} />
               <Route path="/admin/profile" element={<ProfilePage />} />
               <Route path="/admin/authors" element={<AdminAuthorsPage />} />
+              <Route path="/admin/categories" element={<AdminCategoriesPage />} />
             </Route>
           </Route>
 
