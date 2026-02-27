@@ -24,11 +24,17 @@ const Navbar: React.FC = () => {
 
                 {!isAdminRoute && (
                     <div className="hidden md:flex items-center gap-6">
-                        <Link to="/" className="text-[#6B6B6B] hover:text-[#6B4F3A] transition-colors">Bosh sahifa</Link>
-                        <Link to="/books" className="text-[#6B6B6B] hover:text-[#6B4F3A] transition-colors">Kitoblar</Link>
-                        <Link to="/authors" className="text-[#6B6B6B] hover:text-[#6B4F3A] transition-colors">Mualliflar</Link>
-                        {isAuthenticated && (
-                            <Link to="/profile" className="text-[#6B6B6B] hover:text-[#6B4F3A] transition-colors italic">Profil</Link>
+                        {!isAuthenticated ? (
+                            <>
+                                <a href="/#home" className="text-[#6B6B6B] hover:text-[#6B4F3A] transition-colors">Bosh sahifa</a>
+                                <a href="/#books" className="text-[#6B6B6B] hover:text-[#6B4F3A] transition-colors">Kitoblar</a>
+                                <a href="/#authors" className="text-[#6B6B6B] hover:text-[#6B4F3A] transition-colors">Mualliflar</a>
+                            </>
+                        ) : (
+                            <>
+                                <Link to="/dashboard" className="text-[#6B6B6B] hover:text-[#6B4F3A] transition-colors">Bosh sahifa</Link>
+                                <Link to="/profile" className="text-[#6B6B6B] hover:text-[#6B4F3A] transition-colors italic">Profil</Link>
+                            </>
                         )}
                     </div>
                 )}
