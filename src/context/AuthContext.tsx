@@ -94,9 +94,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
     try {
       await refreshUser();
-      await refreshProfileImageUrl();
-    } catch (error) {
-      console.error("Initial auth check failed:", error);
+    } catch {
       clearAuthState();
     } finally {
       setIsLoading(false);
@@ -215,10 +213,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     setUser(fallbackUser);
 
     try {
-      const [freshUser] = await Promise.all([
-        refreshUser(),
-        refreshProfileImageUrl(),
-      ]);
+      const freshUser = await refreshUser();
       return freshUser;
     } catch {
       setUser(fallbackUser);

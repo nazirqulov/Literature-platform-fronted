@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
-import { Plus, X } from "lucide-react";
+import { Pencil, Plus, X } from "lucide-react";
 import api from "../../services/api";
+import type { AxiosError } from "axios";
 
 const AdminBooksPage: React.FC = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -13,12 +14,14 @@ const AdminBooksPage: React.FC = () => {
   const [booksPage, setBooksPage] = useState(0);
   const [booksSize, setBooksSize] = useState(10);
   const [booksTotalPages, setBooksTotalPages] = useState(1);
+  const [categoryDetailBook, setCategoryDetailBook] =
+    useState<BookResponse | null>(null);
   const [newBook, setNewBook] = useState<BookCreateForm>({
     title: "",
     description: "",
     authorId: "",
-    categoryIds: [],
-    manualCategoryIds: "",
+    subCategoryIds: [],
+    manualSubCategoryIds: "",
     isbn: "",
     publishedYear: "",
     publisher: "",
@@ -26,6 +29,14 @@ const AdminBooksPage: React.FC = () => {
     pageCount: "",
     isFeatured: false,
   });
+  const [editingBook, setEditingBook] = useState<BookEditForm | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [newCoverFile, setNewCoverFile] = useState<File | null>(null);
+  const [newCoverPreview, setNewCoverPreview] = useState<string | null>(null);
+  const [editCoverFile, setEditCoverFile] = useState<File | null>(null);
+  const [editCoverPreview, setEditCoverPreview] = useState<string | null>(null);
+  const newCoverObjectUrlRef = useRef<string | null>(null);
+  const editCoverObjectUrlRef = useRef<string | null>(null);
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -55,6 +66,84 @@ const AdminBooksPage: React.FC = () => {
       toast.error("Mualliflar ro'yxatini yuklashda xatolik yuz berdi.");
     }
   }, []);
+
+  const getErrorMessage = (error: unknown, fallback: string) => {
+    const axiosError = error as AxiosError;
+    const data = axiosError.response?.data as
+      | { message?: string; errors?: Record<string, string> }
+      | string
+      | undefined;
+
+    if (!data) return fallback;
+    if (typeof data === "string") return data;
+    if (typeof data.message === "string") return data.message;
+    if (data.errors && typeof data.errors === "object") {
+      return Object.values(data.errors).join(" ");
+    }
+    return fallback;
+  };
+
+  const resolveCoverUrl = (value?: string | null) => {
+    if (!value) return null;
+    if (value.startsWith("http")) return value;
+    const baseUrl = api.defaults.baseURL ?? "http://localhost:8080";
+    return new URL(value.replace(/^\/+/, ""), `${baseUrl}/`).toString();
+  };
+
+  const clearNewCoverPreview = () => {
+    if (newCoverObjectUrlRef.current) {
+      URL.revokeObjectURL(newCoverObjectUrlRef.current);
+      newCoverObjectUrlRef.current = null;
+    }
+    setNewCoverPreview(null);
+    setNewCoverFile(null);
+  };
+
+  const clearEditCoverPreview = () => {
+    if (editCoverObjectUrlRef.current) {
+      URL.revokeObjectURL(editCoverObjectUrlRef.current);
+      editCoverObjectUrlRef.current = null;
+    }
+    setEditCoverPreview(null);
+    setEditCoverFile(null);
+  };
+
+  const handleCoverSelect = (file: File, mode: "create" | "edit") => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Faqat rasm fayllarini yuklash mumkin.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Rasm hajmi 5MB dan oshmasligi kerak.");
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    if (mode === "create") {
+      if (newCoverObjectUrlRef.current) {
+        URL.revokeObjectURL(newCoverObjectUrlRef.current);
+      }
+      newCoverObjectUrlRef.current = objectUrl;
+      setNewCoverFile(file);
+      setNewCoverPreview(objectUrl);
+      return;
+    }
+
+    if (editCoverObjectUrlRef.current) {
+      URL.revokeObjectURL(editCoverObjectUrlRef.current);
+    }
+    editCoverObjectUrlRef.current = objectUrl;
+    setEditCoverFile(file);
+    setEditCoverPreview(objectUrl);
+  };
+
+  const uploadCoverImage = async (bookId: number, file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    await api.post(`/api/books/${bookId}/cover`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  };
 
   const normalizeBooks = (data: unknown) => {
     if (Array.isArray(data)) {
@@ -104,6 +193,19 @@ const AdminBooksPage: React.FC = () => {
     void fetchBooks();
   }, [fetchBooks]);
 
+  useEffect(() => {
+    return () => {
+      if (newCoverObjectUrlRef.current) {
+        URL.revokeObjectURL(newCoverObjectUrlRef.current);
+        newCoverObjectUrlRef.current = null;
+      }
+      if (editCoverObjectUrlRef.current) {
+        URL.revokeObjectURL(editCoverObjectUrlRef.current);
+        editCoverObjectUrlRef.current = null;
+      }
+    };
+  }, []);
+
   const resolveSubCategoryId = (child: CategoryChild) =>
     child.id ??
     child.subCategoryId ??
@@ -121,6 +223,29 @@ const AdminBooksPage: React.FC = () => {
     }));
   }, [categories]);
 
+  const subCategoryIdByName = useMemo(() => {
+    const map = new Map<string, number>();
+    subCategoryGroups.forEach((group) => {
+      group.children.forEach((child) => {
+        if (child.id != null) {
+          map.set(child.name, child.id);
+        }
+      });
+    });
+    return map;
+  }, [subCategoryGroups]);
+
+  const categoryChildrenByName = useMemo(() => {
+    const map = new Map<string, string[]>();
+    categories.forEach((category) => {
+      const children = (category.children ?? [])
+        .map((child) => child.name)
+        .filter((name): name is string => !!name);
+      map.set(category.name, children);
+    });
+    return map;
+  }, [categories]);
+
   const flattenedSubCategories = useMemo(() => {
     return subCategoryGroups.flatMap((group) =>
       group.children.filter((child) => child.id != null),
@@ -134,8 +259,8 @@ const AdminBooksPage: React.FC = () => {
       title: "",
       description: "",
       authorId: "",
-      categoryIds: [],
-      manualCategoryIds: "",
+      subCategoryIds: [],
+      manualSubCategoryIds: "",
       isbn: "",
       publishedYear: "",
       publisher: "",
@@ -143,6 +268,116 @@ const AdminBooksPage: React.FC = () => {
       pageCount: "",
       isFeatured: false,
     });
+    clearNewCoverPreview();
+  };
+
+  const openEditModal = (book: BookResponse) => {
+    const initialSubCategoryIds = Array.isArray(book.subCategoryName)
+      ? book.subCategoryName
+          .map((name) => subCategoryIdByName.get(name))
+          .filter((id): id is number => typeof id === "number")
+      : [];
+    setEditingBook({
+      id: book.id ?? 0,
+      title: book.title ?? "",
+      description: book.description ?? "",
+      authorId: book.author?.id ? String(book.author.id) : "",
+      subCategoryIds: initialSubCategoryIds,
+      manualSubCategoryIds: "",
+      isbn: book.isbn ?? "",
+      publishedYear: book.publishedYear ? String(book.publishedYear) : "",
+      publisher: book.publisher ?? "",
+      language: book.language ?? "",
+      pageCount: book.pageCount ? String(book.pageCount) : "",
+      isFeatured: Boolean(book.isFeatured),
+    });
+    clearEditCoverPreview();
+    const existingCover = resolveCoverUrl(book.coverImage);
+    if (existingCover) {
+      setEditCoverPreview(existingCover);
+    }
+  };
+
+  const closeEditModal = () => {
+    setEditingBook(null);
+    clearEditCoverPreview();
+  };
+
+  const toggleEditSubCategoryId = (id: number) => {
+    if (!editingBook) return;
+    setEditingBook((prev) =>
+      prev
+        ? {
+            ...prev,
+            subCategoryIds: prev.subCategoryIds.includes(id)
+              ? prev.subCategoryIds.filter((item) => item !== id)
+              : [...prev.subCategoryIds, id],
+          }
+        : prev,
+    );
+  };
+
+  const updateBook = async () => {
+    if (!editingBook) return;
+    if (!editingBook.title.trim()) {
+      toast.error("Kitob nomi majburiy.");
+      return;
+    }
+    if (!editingBook.authorId.trim()) {
+      toast.error("Muallif ID majburiy.");
+      return;
+    }
+
+    const manualIds = parseManualSubCategoryIds(editingBook.manualSubCategoryIds);
+    const mergedSubCategoryIds = Array.from(
+      new Set([...editingBook.subCategoryIds, ...manualIds]),
+    );
+
+    const payload: BookCreateRequest = {
+      title: editingBook.title.trim(),
+      description: editingBook.description.trim() || undefined,
+      authorId: Number(editingBook.authorId),
+      subCategoryIds: mergedSubCategoryIds.length
+        ? mergedSubCategoryIds
+        : undefined,
+      isbn: editingBook.isbn.trim() || undefined,
+      publishedYear: editingBook.publishedYear
+        ? Number(editingBook.publishedYear)
+        : undefined,
+      publisher: editingBook.publisher.trim() || undefined,
+      language: editingBook.language.trim() || undefined,
+      pageCount: editingBook.pageCount ? Number(editingBook.pageCount) : undefined,
+      isFeatured: editingBook.isFeatured,
+    };
+
+    if (Number.isNaN(payload.authorId)) {
+      toast.error("Muallif ID noto'g'ri formatda.");
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      await api.put(`/api/books/update/${editingBook.id}`, payload);
+      if (editCoverFile) {
+        try {
+          await uploadCoverImage(editingBook.id, editCoverFile);
+        } catch (uploadError) {
+          toast.error(
+            getErrorMessage(
+              uploadError,
+              "Muqova rasmini yuklashda xatolik yuz berdi.",
+            ),
+          );
+        }
+      }
+      toast.success("Kitob ma'lumotlari yangilandi.");
+      await fetchBooks();
+      closeEditModal();
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Yangilashda xatolik yuz berdi."));
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const openCreateModal = () => {
@@ -154,16 +389,16 @@ const AdminBooksPage: React.FC = () => {
     resetForm();
   };
 
-  const toggleCategoryId = (id: number) => {
+  const toggleSubCategoryId = (id: number) => {
     setNewBook((prev) => ({
       ...prev,
-      categoryIds: prev.categoryIds.includes(id)
-        ? prev.categoryIds.filter((item) => item !== id)
-        : [...prev.categoryIds, id],
+      subCategoryIds: prev.subCategoryIds.includes(id)
+        ? prev.subCategoryIds.filter((item) => item !== id)
+        : [...prev.subCategoryIds, id],
     }));
   };
 
-  const parseManualCategoryIds = (value: string) =>
+  const parseManualSubCategoryIds = (value: string) =>
     value
       .split(/[, ]+/)
       .map((item) => Number(item.trim()))
@@ -179,16 +414,18 @@ const AdminBooksPage: React.FC = () => {
       return;
     }
 
-    const manualIds = parseManualCategoryIds(newBook.manualCategoryIds);
-    const mergedCategoryIds = Array.from(
-      new Set([...newBook.categoryIds, ...manualIds]),
+    const manualIds = parseManualSubCategoryIds(newBook.manualSubCategoryIds);
+    const mergedSubCategoryIds = Array.from(
+      new Set([...newBook.subCategoryIds, ...manualIds]),
     );
 
     const payload: BookCreateRequest = {
       title: newBook.title.trim(),
       description: newBook.description.trim() || undefined,
       authorId: Number(newBook.authorId),
-      categoryIds: mergedCategoryIds.length ? mergedCategoryIds : undefined,
+      subCategoryIds: mergedSubCategoryIds.length
+        ? mergedSubCategoryIds
+        : undefined,
       isbn: newBook.isbn.trim() || undefined,
       publishedYear: newBook.publishedYear
         ? Number(newBook.publishedYear)
@@ -206,14 +443,27 @@ const AdminBooksPage: React.FC = () => {
 
     setIsCreating(true);
     try {
-      await api.post("/api/books/create", payload);
+      const { data } = await api.post<BookResponse>("/api/books/create", payload);
+      if (newCoverFile && data?.id) {
+        try {
+          await uploadCoverImage(data.id, newCoverFile);
+        } catch (uploadError) {
+          toast.error(
+            getErrorMessage(
+              uploadError,
+              "Muqova rasmini yuklashda xatolik yuz berdi.",
+            ),
+          );
+        }
+      }
       toast.success("Kitob muvaffaqiyatli qo'shildi.");
       await fetchBooks();
       closeCreateModal();
     } catch (error) {
-      const message =
-        (error as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? "Kitob qo'shishda xatolik yuz berdi.";
+      const message = getErrorMessage(
+        error,
+        "Kitob qo'shishda xatolik yuz berdi.",
+      );
       toast.error(message);
     } finally {
       setIsCreating(false);
@@ -225,6 +475,112 @@ const AdminBooksPage: React.FC = () => {
       return "--";
     }
     return value;
+  };
+
+  const renderCategoryGroups = (book: BookResponse) => {
+    const categoryNames = (book.categories ?? [])
+      .map((item) => item.name)
+      .filter((name): name is string => !!name);
+    const subNames = (book.subCategoryName ?? []).filter(
+      (name): name is string => !!name,
+    );
+
+    if (categoryNames.length === 0 && subNames.length === 0) {
+      return <span className="text-[#6B6B6B]">--</span>;
+    }
+
+    const used = new Set<string>();
+
+    return (
+      <div className="space-y-2">
+        {categoryNames.length > 0 ? (
+          categoryNames.map((categoryName) => {
+            const possibleChildren = categoryChildrenByName.get(categoryName) ?? [];
+            const matched = subNames.filter((name) =>
+              possibleChildren.includes(name),
+            );
+            matched.forEach((name) => used.add(name));
+
+            return (
+              <div key={categoryName} className="space-y-1">
+                <div className="text-xs font-semibold text-[#2B2B2B]">
+                  {categoryName}
+                </div>
+                {matched.length > 0 ? (
+                  <div className="flex flex-wrap gap-1">
+                    {matched.map((name, index) => (
+                      <span
+                        key={`${categoryName}-${name}-${index}`}
+                        className="rounded-full border border-[#E3DBCF] bg-[#E3DBCF]/60 px-2 py-0.5 text-xs font-semibold text-[#6B6B6B]"
+                      >
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-xs text-[#9A9A9A]">
+                    Subcategory yo'q
+                  </span>
+                )}
+              </div>
+            );
+          })
+        ) : (
+          <span className="text-xs text-[#9A9A9A]">Kategoriya yo'q</span>
+        )}
+
+        {subNames.length > 0 && used.size !== subNames.length && (
+          <div className="space-y-1">
+            <div className="text-xs font-semibold text-[#2B2B2B]">Boshqa</div>
+            <div className="flex flex-wrap gap-1">
+              {subNames
+                .filter((name) => !used.has(name))
+                .map((name, index) => (
+                  <span
+                    key={`other-${name}-${index}`}
+                    className="rounded-full border border-[#E3DBCF] bg-[#E3DBCF]/60 px-2 py-0.5 text-xs font-semibold text-[#6B6B6B]"
+                  >
+                    {name}
+                  </span>
+                ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderCategorySummary = (book: BookResponse) => {
+    const categoryNames = (book.categories ?? [])
+      .map((item) => item.name)
+      .filter((name): name is string => !!name);
+    const subNames = (book.subCategoryName ?? []).filter(
+      (name): name is string => !!name,
+    );
+
+    if (categoryNames.length === 0 && subNames.length === 0) {
+      return <span className="text-[#6B6B6B]">--</span>;
+    }
+
+    return (
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="rounded-full border border-[#E3DBCF] bg-white px-2 py-0.5 text-xs font-semibold text-[#6B6B6B]">
+          {categoryNames.length} kategoriya
+        </span>
+        <span className="rounded-full border border-[#E3DBCF] bg-white px-2 py-0.5 text-xs font-semibold text-[#6B6B6B]">
+          {subNames.length} subcategory
+        </span>
+        {book.id != null && (
+          <button
+            type="button"
+            onClick={() => setCategoryDetailBook(book)}
+            className="rounded-full border border-[#6B4F3A]/30 bg-[#6B4F3A]/10 px-3 py-0.5 text-xs font-semibold text-[#6B4F3A] transition hover:bg-[#6B4F3A]/20"
+          >
+            Ko'rish
+          </button>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -260,10 +616,7 @@ const AdminBooksPage: React.FC = () => {
                   Muallif
                 </th>
                 <th className="border-b border-r border-[#E3DBCF] px-4 py-4">
-                  Category
-                </th>
-                <th className="border-b border-r border-[#E3DBCF] px-4 py-4">
-                  Subcategory
+                  Kategoriya / Subcategory
                 </th>
                 <th className="border-b border-r border-[#E3DBCF] px-4 py-4">
                   Til
@@ -274,13 +627,14 @@ const AdminBooksPage: React.FC = () => {
                 <th className="border-b border-[#E3DBCF] px-4 py-4">
                   Tavsiya
                 </th>
+                <th className="border-b border-[#E3DBCF] px-4 py-4">Amallar</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E3DBCF]">
               {booksLoading ? (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={9}
                     className="px-4 py-6 text-center text-[#6B6B6B]"
                   >
                     Yuklanmoqda...
@@ -289,52 +643,72 @@ const AdminBooksPage: React.FC = () => {
               ) : books.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={9}
                     className="px-4 py-6 text-center text-[#6B6B6B]"
                   >
                     Kitoblar topilmadi.
                   </td>
                 </tr>
               ) : (
-                books.map((book) => (
-                  <tr
-                    key={book.id}
-                    className="bg-[#F5F1E8]/40 transition hover:bg-[#EFE7DB]/60"
-                  >
-                    <td className="border-r border-[#E3DBCF] px-4 py-4 text-[#2B2B2B]">
-                      {formatCell(book.id)}
-                    </td>
-                    <td className="border-r border-[#E3DBCF] px-4 py-4 text-[#2B2B2B]">
-                      {formatCell(book.title)}
-                    </td>
-                    <td className="border-r border-[#E3DBCF] px-4 py-4 text-[#2B2B2B]">
-                      {formatCell(book.author?.name)}
-                    </td>
-                    <td className="border-r border-[#E3DBCF] px-4 py-4 text-[#2B2B2B]">
-                      {formatCell(book.category?.name)}
-                    </td>
-                    <td className="border-r border-[#E3DBCF] px-4 py-4 text-[#2B2B2B]">
-                      {formatCell(book.subCategoryName)}
-                    </td>
-                    <td className="border-r border-[#E3DBCF] px-4 py-4 text-[#2B2B2B]">
-                      {formatCell(book.language)}
-                    </td>
-                    <td className="border-r border-[#E3DBCF] px-4 py-4 text-[#2B2B2B]">
-                      {formatCell(book.publishedYear)}
-                    </td>
-                    <td className="px-4 py-4">
-                      <span
-                        className={[
-                          "rounded-full px-3 py-1 text-xs font-semibold",
-                          book.isFeatured
-                            ? "bg-[#6B4F3A]/15 text-[#6B4F3A]"
-                            : "bg-[#E3DBCF]/70 text-[#6B6B6B]",
-                        ].join(" ")}
-                      >
-                        {book.isFeatured ? "Tavsiya" : "Oddiy"}
-                      </span>
-                    </td>
-                  </tr>
+                books.map((book, index) => (
+                  <React.Fragment key={book.id ?? `book-${index}`}>
+                    <tr className="bg-[#F5F1E8]/40 transition hover:bg-[#EFE7DB]/60">
+                      <td className="border-r border-[#E3DBCF] px-4 py-4 text-[#2B2B2B]">
+                        {formatCell(book.id)}
+                      </td>
+                      <td className="border-r border-[#E3DBCF] px-4 py-4 text-[#2B2B2B]">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-12 w-9 items-center justify-center overflow-hidden rounded-md border border-[#E3DBCF] bg-white">
+                            {resolveCoverUrl(book.coverImage) ? (
+                              <img
+                                src={resolveCoverUrl(book.coverImage) ?? ""}
+                                alt={book.title ?? "Muqova"}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-[10px] text-[#9A9A9A]">
+                                Rasm yo'q
+                              </span>
+                            )}
+                          </div>
+                          <span>{formatCell(book.title)}</span>
+                        </div>
+                      </td>
+                      <td className="border-r border-[#E3DBCF] px-4 py-4 text-[#2B2B2B]">
+                        {formatCell(book.author?.name)}
+                      </td>
+                      <td className="border-r border-[#E3DBCF] px-4 py-4 text-[#2B2B2B]">
+                        {renderCategorySummary(book)}
+                      </td>
+                      <td className="border-r border-[#E3DBCF] px-4 py-4 text-[#2B2B2B]">
+                        {formatCell(book.language)}
+                      </td>
+                      <td className="border-r border-[#E3DBCF] px-4 py-4 text-[#2B2B2B]">
+                        {formatCell(book.publishedYear)}
+                      </td>
+                      <td className="px-4 py-4">
+                        <span
+                          className={[
+                            "rounded-full px-3 py-1 text-xs font-semibold",
+                            book.isFeatured
+                              ? "bg-[#6B4F3A]/15 text-[#6B4F3A]"
+                              : "bg-[#E3DBCF]/70 text-[#6B6B6B]",
+                          ].join(" ")}
+                        >
+                          {book.isFeatured ? "Tavsiya" : "Oddiy"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4">
+                        <button
+                          onClick={() => openEditModal(book)}
+                          className="inline-flex items-center gap-1 rounded-md border border-[#E3DBCF] px-2 py-1 text-xs text-[#2B2B2B] transition hover:bg-white"
+                        >
+                          <Pencil size={14} />
+                          Tahrirlash
+                        </button>
+                      </td>
+                    </tr>
+                  </React.Fragment>
                 ))
               )}
             </tbody>
@@ -434,6 +808,40 @@ const AdminBooksPage: React.FC = () => {
                   className="min-h-[90px] w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
                   placeholder="Kitob haqida qisqacha..."
                 />
+              </div>
+
+              <div className="space-y-2 lg:col-span-2">
+                <label className="text-xs font-medium text-[#6B6B6B]">
+                  Muqova rasmi (ixtiyoriy)
+                </label>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                  <div className="flex h-28 w-20 items-center justify-center overflow-hidden rounded-lg border border-[#E3DBCF] bg-white">
+                    {newCoverPreview ? (
+                      <img
+                        src={newCoverPreview}
+                        alt="Muqova preview"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-xs text-[#9A9A9A]">Rasm yo'q</span>
+                    )}
+                  </div>
+                  <label className="inline-flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-[#E3DBCF] bg-white px-4 py-2 text-sm text-[#6B6B6B] transition hover:bg-[#EFE7DB]/60">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        if (file) handleCoverSelect(file, "create");
+                      }}
+                    />
+                    Rasm tanlash
+                  </label>
+                </div>
+                <p className="text-xs text-[#9A9A9A]">
+                  JPG/PNG, 5MB gacha.
+                </p>
               </div>
 
                 <div className="space-y-2">
@@ -601,11 +1009,11 @@ const AdminBooksPage: React.FC = () => {
                                   type="checkbox"
                                   checked={
                                     child.id != null &&
-                                    newBook.categoryIds.includes(child.id)
+                                    newBook.subCategoryIds.includes(child.id)
                                   }
                                   onChange={() =>
                                     child.id != null &&
-                                    toggleCategoryId(child.id)
+                                    toggleSubCategoryId(child.id)
                                   }
                                   disabled={child.id == null}
                                   className="h-4 w-4 rounded border-[#E3DBCF]"
@@ -630,11 +1038,11 @@ const AdminBooksPage: React.FC = () => {
                     Subcategory ID'lar (ixtiyoriy)
                   </label>
                   <input
-                    value={newBook.manualCategoryIds}
+                    value={newBook.manualSubCategoryIds}
                     onChange={(event) =>
                       setNewBook((prev) => ({
                         ...prev,
-                        manualCategoryIds: event.target.value,
+                        manualSubCategoryIds: event.target.value,
                       }))
                     }
                     className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
@@ -663,6 +1071,353 @@ const AdminBooksPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {editingBook && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3 sm:p-6">
+          <div className="flex w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-[#E3DBCF] bg-white shadow-xl">
+            <div className="flex flex-col gap-3 border-b border-[#E3DBCF] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+              <div>
+                <h2 className="text-lg font-semibold text-[#2B2B2B]">
+                  Kitobni tahrirlash
+                </h2>
+                <p className="text-sm text-[#6B6B6B]">
+                  Kitob nomi va muallif ID majburiy.
+                </p>
+              </div>
+              <button
+                onClick={closeEditModal}
+                className="self-start rounded-lg border border-[#E3DBCF] px-3 py-1 text-sm text-[#6B6B6B] transition hover:bg-white sm:self-auto"
+                aria-label="Modalni yopish"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="max-h-[75vh] flex-1 overflow-y-auto px-4 py-4 sm:max-h-[70vh] sm:px-6">
+              <div className="grid gap-4 lg:grid-cols-2">
+                <div className="space-y-2 lg:col-span-2">
+                  <label className="text-xs font-medium text-[#6B6B6B]">
+                    Kitob nomi
+                  </label>
+                  <input
+                    value={editingBook.title}
+                    onChange={(event) =>
+                      setEditingBook((prev) =>
+                        prev ? { ...prev, title: event.target.value } : prev,
+                      )
+                    }
+                    className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
+                    placeholder="Masalan: O'tkan kunlar"
+                  />
+                </div>
+
+                <div className="space-y-2 lg:col-span-2">
+                  <label className="text-xs font-medium text-[#6B6B6B]">
+                    Kitob tavsifi
+                  </label>
+                  <textarea
+                    value={editingBook.description}
+                    onChange={(event) =>
+                      setEditingBook((prev) =>
+                        prev
+                          ? { ...prev, description: event.target.value }
+                          : prev,
+                      )
+                    }
+                    className="min-h-[90px] w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
+                    placeholder="Kitob haqida qisqacha..."
+                  />
+                </div>
+
+                <div className="space-y-2 lg:col-span-2">
+                  <label className="text-xs font-medium text-[#6B6B6B]">
+                    Muqova rasmi (ixtiyoriy)
+                  </label>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                    <div className="flex h-28 w-20 items-center justify-center overflow-hidden rounded-lg border border-[#E3DBCF] bg-white">
+                      {editCoverPreview ? (
+                        <img
+                          src={editCoverPreview}
+                          alt="Muqova preview"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-xs text-[#9A9A9A]">
+                          Rasm yo'q
+                        </span>
+                      )}
+                    </div>
+                    <label className="inline-flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-[#E3DBCF] bg-white px-4 py-2 text-sm text-[#6B6B6B] transition hover:bg-[#EFE7DB]/60">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(event) => {
+                          const file = event.target.files?.[0];
+                          if (file) handleCoverSelect(file, "edit");
+                        }}
+                      />
+                      Rasm tanlash
+                    </label>
+                  </div>
+                  <p className="text-xs text-[#9A9A9A]">
+                    JPG/PNG, 5MB gacha.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-[#6B6B6B]">
+                    Muallif
+                  </label>
+                  <select
+                    value={editingBook.authorId}
+                    onChange={(event) =>
+                      setEditingBook((prev) =>
+                        prev ? { ...prev, authorId: event.target.value } : prev,
+                      )
+                    }
+                    className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
+                  >
+                    <option value="">Tanlang</option>
+                    {authors.map((author) => (
+                      <option key={author.id} value={author.id}>
+                        {author.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-[#6B6B6B]">
+                    ISBN
+                  </label>
+                  <input
+                    value={editingBook.isbn}
+                    onChange={(event) =>
+                      setEditingBook((prev) =>
+                        prev ? { ...prev, isbn: event.target.value } : prev,
+                      )
+                    }
+                    className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
+                    placeholder="ISBN"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-[#6B6B6B]">
+                    Nashr yili
+                  </label>
+                  <input
+                    value={editingBook.publishedYear}
+                    onChange={(event) =>
+                      setEditingBook((prev) =>
+                        prev
+                          ? { ...prev, publishedYear: event.target.value }
+                          : prev,
+                      )
+                    }
+                    className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
+                    placeholder="2020"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-[#6B6B6B]">
+                    Nashriyot
+                  </label>
+                  <input
+                    value={editingBook.publisher}
+                    onChange={(event) =>
+                      setEditingBook((prev) =>
+                        prev ? { ...prev, publisher: event.target.value } : prev,
+                      )
+                    }
+                    className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
+                    placeholder="Nashriyot nomi"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-[#6B6B6B]">
+                    Til
+                  </label>
+                  <input
+                    value={editingBook.language}
+                    onChange={(event) =>
+                      setEditingBook((prev) =>
+                        prev ? { ...prev, language: event.target.value } : prev,
+                      )
+                    }
+                    className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
+                    placeholder="O'zbek"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-[#6B6B6B]">
+                    Sahifalar soni
+                  </label>
+                  <input
+                    value={editingBook.pageCount}
+                    onChange={(event) =>
+                      setEditingBook((prev) =>
+                        prev ? { ...prev, pageCount: event.target.value } : prev,
+                      )
+                    }
+                    className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
+                    placeholder="320"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 lg:col-span-2">
+                  <input
+                    id="isFeaturedEdit"
+                    type="checkbox"
+                    checked={editingBook.isFeatured}
+                    onChange={(event) =>
+                      setEditingBook((prev) =>
+                        prev
+                          ? { ...prev, isFeatured: event.target.checked }
+                          : prev,
+                      )
+                    }
+                    className="h-4 w-4 rounded border-[#E3DBCF]"
+                  />
+                  <label htmlFor="isFeaturedEdit" className="text-sm text-[#6B6B6B]">
+                    Tavsiya etilgan (featured)
+                  </label>
+                </div>
+              </div>
+
+              <div className="mt-6 space-y-3">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                  <h3 className="text-sm font-semibold text-[#2B2B2B]">
+                    Subcategorylar
+                  </h3>
+                  {!hasSelectableSubCategories && (
+                    <span className="text-xs text-[#6B6B6B]">
+                      Subcategory ID'lar backenddan berilsa, tanlash osonlashadi.
+                    </span>
+                  )}
+                </div>
+
+                <div className="max-h-60 space-y-4 overflow-auto rounded-xl border border-[#E3DBCF] bg-[#F5F1E8] p-3 sm:max-h-72 sm:p-4">
+                  {subCategoryGroups.length === 0 ? (
+                    <p className="text-sm text-[#6B6B6B]">
+                      Categorylar topilmadi.
+                    </p>
+                  ) : (
+                    subCategoryGroups.map((group) => (
+                      <div key={group.parentName} className="space-y-2">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-[#6B6B6B]">
+                          {group.parentName}
+                        </p>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          {group.children.length === 0 ? (
+                            <p className="text-xs text-[#9A9A9A]">
+                              Subcategory yo'q.
+                            </p>
+                          ) : (
+                            group.children.map((child, idx) => (
+                              <label
+                                key={`${group.parentName}-${child.name}-${idx}`}
+                                className="flex items-center gap-2 text-sm text-[#2B2B2B]"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={
+                                    child.id != null &&
+                                    editingBook.subCategoryIds.includes(child.id)
+                                  }
+                                  onChange={() =>
+                                    child.id != null &&
+                                    toggleEditSubCategoryId(child.id)
+                                  }
+                                  disabled={child.id == null}
+                                  className="h-4 w-4 rounded border-[#E3DBCF]"
+                                />
+                                <span className="font-medium">{child.name}</span>
+                                {child.id == null && (
+                                  <span className="text-xs text-[#9A9A9A]">
+                                    (ID yo'q)
+                                  </span>
+                                )}
+                              </label>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-[#6B6B6B]">
+                    Subcategory ID'lar (ixtiyoriy)
+                  </label>
+                  <input
+                    value={editingBook.manualSubCategoryIds}
+                    onChange={(event) =>
+                      setEditingBook((prev) =>
+                        prev
+                          ? { ...prev, manualSubCategoryIds: event.target.value }
+                          : prev,
+                      )
+                    }
+                    className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
+                    placeholder="Masalan: 12, 14, 18"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-stretch justify-end gap-3 border-t border-[#E3DBCF] px-4 py-4 sm:flex-row sm:items-center sm:px-6">
+              <button
+                onClick={closeEditModal}
+                className="rounded-lg border border-[#E3DBCF] px-4 py-2 text-sm text-[#6B6B6B] transition hover:bg-white"
+                disabled={isUpdating}
+              >
+                Bekor qilish
+              </button>
+              <button
+                onClick={updateBook}
+                disabled={isUpdating}
+                className="rounded-lg bg-[#6B4F3A] px-4 py-2 text-sm font-semibold text-[#F5F1E8] transition hover:bg-[#5A4030] disabled:opacity-70"
+              >
+                {isUpdating ? "Saqlanmoqda..." : "Saqlash"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {categoryDetailBook && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-[#E3DBCF] bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b border-[#E3DBCF] px-4 py-3 sm:px-6">
+              <div>
+                <h2 className="text-lg font-semibold text-[#2B2B2B]">
+                  Kategoriya va subcategorylar
+                </h2>
+                <p className="text-sm text-[#6B6B6B]">
+                  {categoryDetailBook.title ?? "Tanlangan kitob"}
+                </p>
+              </div>
+              <button
+                onClick={() => setCategoryDetailBook(null)}
+                className="rounded-lg border border-[#E3DBCF] px-3 py-1 text-sm text-[#6B6B6B] transition hover:bg-white"
+                aria-label="Modalni yopish"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="max-h-[70vh] overflow-y-auto p-4 sm:p-6">
+              {renderCategoryGroups(categoryDetailBook)}
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
@@ -673,8 +1428,8 @@ interface BookCreateForm {
   title: string;
   description: string;
   authorId: string;
-  categoryIds: number[];
-  manualCategoryIds: string;
+  subCategoryIds: number[];
+  manualSubCategoryIds: string;
   isbn: string;
   publishedYear: string;
   publisher: string;
@@ -683,11 +1438,15 @@ interface BookCreateForm {
   isFeatured: boolean;
 }
 
+interface BookEditForm extends BookCreateForm {
+  id: number;
+}
+
 interface BookCreateRequest {
   title: string;
   description?: string;
   authorId: number;
-  categoryIds?: number[];
+  subCategoryIds?: number[];
   isbn?: string;
   publishedYear?: number;
   publisher?: string;
@@ -732,11 +1491,16 @@ interface BookCategoryResponse {
 interface BookResponse {
   id?: number;
   title?: string;
+  description?: string | null;
   author?: AuthorResponse | null;
-  category?: BookCategoryResponse | null;
-  subCategoryName?: string | null;
+  categories?: BookCategoryResponse[] | null;
+  subCategoryName?: string[] | null;
+  isbn?: string | null;
   language?: string | null;
   publishedYear?: number | null;
+  publisher?: string | null;
+  pageCount?: number | null;
+  coverImage?: string | null;
   isFeatured?: boolean | null;
 }
 
@@ -746,5 +1510,6 @@ interface PagedResponse<T> {
   number?: number;
   size?: number;
 }
+
 
 

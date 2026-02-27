@@ -252,8 +252,21 @@
   .dark .bg-\[\#EFE7DB\]\/50 {
     background-color: rgba(42, 42, 42, 0.5);
   }
+  .dark .hover\:bg-\[\#EFE7DB\]\/60:hover {
+    background-color: rgba(42, 42, 42, 0.6);
+  }
   .dark .hover\:bg-\[\#EFE7DB\]:hover {
     background-color: rgba(42, 42, 42, 0.8);
+  }
+
+  .dark .bg-\[\#E3DBCF\] {
+    background-color: var(--color-border);
+  }
+  .dark .bg-\[\#E3DBCF\]\/60 {
+    background-color: rgba(58, 58, 58, 0.6);
+  }
+  .dark .bg-\[\#E3DBCF\]\/70 {
+    background-color: rgba(58, 58, 58, 0.7);
   }
 
   .dark .btn-primary {
