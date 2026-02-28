@@ -13,7 +13,7 @@ const Navbar: React.FC = () => {
     return (
         <nav className="sticky top-0 z-50 glass border-b border-[#E3DBCF] px-4 py-3">
             <div className="max-w-7xl mx-auto flex items-center justify-between">
-                <Link to="/" className="flex items-center gap-2 group">
+                <Link to={isAdminRoute ? "/admin" : "/"} className="flex items-center gap-2 group">
                     <div className="p-2 bg-[#6B4F3A] rounded-lg group-hover:rotate-12 transition-transform">
                         <Library size={20} className="text-[#F5F1E8]" />
                     </div>
