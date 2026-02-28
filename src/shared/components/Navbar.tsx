@@ -1,14 +1,61 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
 import { LogOut, User, Library, Moon, Sun } from 'lucide-react';
 import { useTheme } from '../../context/useTheme';
+import api from '../../services/api';
+
+interface CategoryChild {
+    id?: number | null;
+    name: string;
+}
+
+interface CategoryItem {
+    id: number;
+    name: string;
+    children?: CategoryChild[];
+}
+
+interface CategoryListResponse {
+    content?: CategoryItem[];
+}
 
 const Navbar: React.FC = () => {
     const { isAuthenticated, user, logout } = useAuth();
     const { theme, setTheme } = useTheme();
     const location = useLocation();
     const isAdminRoute = location.pathname.startsWith('/admin');
+    const [categories, setCategories] = useState<CategoryItem[]>([]);
+
+    useEffect(() => {
+        if (!isAuthenticated || isAdminRoute) return;
+        let isCancelled = false;
+        const loadCategories = async () => {
+            try {
+                const { data } = await api.get<CategoryListResponse>('/api/categories/read', {
+                    params: { page: 0, size: 200 },
+                });
+                if (!isCancelled) {
+                    setCategories(Array.isArray(data.content) ? data.content : []);
+                }
+            } catch {
+                if (!isCancelled) {
+                    setCategories([]);
+                }
+            }
+        };
+        void loadCategories();
+        return () => {
+            isCancelled = true;
+        };
+    }, [isAuthenticated, isAdminRoute]);
+
+    const categoryGroups = useMemo(() => {
+        return categories.map((category) => ({
+            name: category.name,
+            children: (category.children ?? []).map((child) => child.name).filter(Boolean),
+        }));
+    }, [categories]);
 
     return (
         <nav className="sticky top-0 z-50 glass border-b border-[#E3DBCF] px-4 py-3">
@@ -33,6 +80,41 @@ const Navbar: React.FC = () => {
                         ) : (
                             <>
                                 <Link to="/dashboard" className="text-[#6B6B6B] hover:text-[#6B4F3A] transition-colors">Bosh sahifa</Link>
+                                <div className="relative group">
+                                    <Link to="/books" className="text-[#6B6B6B] hover:text-[#6B4F3A] transition-colors">
+                                        Kitoblar
+                                    </Link>
+                                    {categoryGroups.length > 0 && (
+                                        <div className="absolute left-0 top-full z-50 hidden w-[340px] pt-3 group-hover:block">
+                                            <div className="rounded-2xl border border-[#E3DBCF] bg-white p-4 shadow-xl">
+                                                <div className="no-scrollbar max-h-80 space-y-4 overflow-auto pr-1">
+                                                    {categoryGroups.map((group) => (
+                                                        <div key={group.name} className="space-y-2">
+                                                            <p className="text-xs font-semibold uppercase tracking-wide text-[#6B6B6B]">
+                                                                {group.name}
+                                                            </p>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {group.children.length === 0 ? (
+                                                                    <span className="text-xs text-[#9A9A9A]">Subcategory yo'q</span>
+                                                                ) : (
+                                                                    group.children.map((child) => (
+                                                                        <Link
+                                                                            key={`${group.name}-${child}`}
+                                                                            to={`/books?sub=${encodeURIComponent(child)}`}
+                                                                            className="rounded-full border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-1 text-xs text-[#2B2B2B] transition hover:border-[#6B4F3A]/40 hover:text-[#6B4F3A]"
+                                                                        >
+                                                                            {child}
+                                                                        </Link>
+                                                                    ))
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                                 <Link to="/profile" className="text-[#6B6B6B] hover:text-[#6B4F3A] transition-colors italic">Profil</Link>
                             </>
                         )}
