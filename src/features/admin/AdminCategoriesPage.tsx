@@ -3,13 +3,12 @@ import { toast } from "react-toastify";
 import { Layers, Tag, Plus, X, AlertCircle } from "lucide-react";
 import api from "../../services/api";
 
+const CATEGORY_PAGE_SIZE = 200;
+
 const AdminCategoriesPage: React.FC = () => {
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [totalElements, setTotalElements] = useState(0);
-  const [page, setPage] = useState(0);
-  const [size, setSize] = useState(10);
-  const [totalPages, setTotalPages] = useState(1);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
@@ -19,23 +18,20 @@ const AdminCategoriesPage: React.FC = () => {
     subCategories: [],
   });
 
-  const fetchCategories = useCallback(async (pageToLoad = page, sizeToLoad = size) => {
+  const fetchCategories = useCallback(async () => {
     setLoading(true);
     try {
       const { data } = await api.get<CategoryResponse>("/api/categories/read", {
-        params: { page: pageToLoad, size: sizeToLoad },
+        params: { page: 0, size: CATEGORY_PAGE_SIZE },
       });
       setCategories(Array.isArray(data.content) ? data.content : []);
       setTotalElements(data.totalElements ?? data.content?.length ?? 0);
-      setTotalPages(data.totalPages ?? 1);
-      setPage(data.number ?? pageToLoad);
-      setSize(data.size ?? sizeToLoad);
     } catch {
       toast.error("Categorylar ro'yxatini yuklashda xatolik yuz berdi.");
     } finally {
       setLoading(false);
     }
-  }, [page, size]);
+  }, []);
 
   useEffect(() => {
     void fetchCategories();
@@ -48,9 +44,6 @@ const AdminCategoriesPage: React.FC = () => {
     }),
     [categories.length, totalElements],
   );
-
-  const hasPrev = page > 0;
-  const hasNext = page + 1 < totalPages;
 
   const resetCreateForm = () => {
     setNewCategory({
@@ -102,7 +95,7 @@ const AdminCategoriesPage: React.FC = () => {
 
   const createCategory = async () => {
     if (!newCategory.categoryName.trim()) {
-      const message = "Category nomi majburiy.";
+      const message = "Kategory nomi majburiy.";
       setCreateError(message);
       toast.error(message);
       return;
@@ -125,10 +118,9 @@ const AdminCategoriesPage: React.FC = () => {
     setCreateError(null);
     try {
       await api.post("/api/categories/create", payload);
-      toast.success("Category muvaffaqiyatli qo'shildi.");
+      toast.success("Kategory muvaffaqiyatli qo'shildi.");
       closeCreateModal();
-      setPage(0);
-      await fetchCategories(0, size);
+      await fetchCategories();
     } catch (error) {
       const rawMessage =
         (error as { response?: { data?: { message?: string } } })?.response?.data
@@ -172,7 +164,7 @@ const AdminCategoriesPage: React.FC = () => {
             </span>
             <div>
               <p className="text-xs uppercase tracking-wide text-[#6B6B6B]">
-                Sahifadagi categorylar
+                Categorylar
               </p>
               <p className="text-lg font-semibold text-[#2B2B2B]">
                 {summary.parents}
@@ -256,46 +248,6 @@ const AdminCategoriesPage: React.FC = () => {
             </div>
           ))
         )}
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-[#6B6B6B]">
-        <div className="flex items-center gap-2">
-          <span>Ko'rsatish:</span>
-          <select
-            value={size}
-            onChange={(event) => {
-              setPage(0);
-              setSize(Number(event.target.value));
-            }}
-            className="rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-2 py-1 text-sm text-[#2B2B2B]"
-          >
-            {[5, 10, 20, 50].map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            disabled={!hasPrev}
-            onClick={() => setPage((prev) => Math.max(0, prev - 1))}
-            className="rounded-md border border-[#E3DBCF] px-3 py-1 text-sm transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Oldingi
-          </button>
-          <span>
-            Sahifa {page + 1} / {totalPages}
-          </span>
-          <button
-            disabled={!hasNext}
-            onClick={() => setPage((prev) => prev + 1)}
-            className="rounded-md border border-[#E3DBCF] px-3 py-1 text-sm transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Keyingi
-          </button>
-        </div>
       </div>
 
       {isCreateOpen && (
@@ -455,9 +407,6 @@ interface CategoryItem {
 interface CategoryResponse {
   content?: CategoryItem[];
   totalElements?: number;
-  totalPages?: number;
-  number?: number;
-  size?: number;
 }
 
 interface CategoryCreateForm {
