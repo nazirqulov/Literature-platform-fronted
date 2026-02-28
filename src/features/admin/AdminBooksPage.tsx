@@ -11,6 +11,9 @@ const AdminBooksPage: React.FC = () => {
   const [authors, setAuthors] = useState<AuthorResponse[]>([]);
   const [books, setBooks] = useState<BookResponse[]>([]);
   const [booksLoading, setBooksLoading] = useState(false);
+  const [bookCovers, setBookCovers] = useState<
+    Record<number, string | null | undefined>
+  >({});
   const [booksPage, setBooksPage] = useState(0);
   const [booksSize, setBooksSize] = useState(10);
   const [booksTotalPages, setBooksTotalPages] = useState(1);
@@ -35,8 +38,15 @@ const AdminBooksPage: React.FC = () => {
   const [newCoverPreview, setNewCoverPreview] = useState<string | null>(null);
   const [editCoverFile, setEditCoverFile] = useState<File | null>(null);
   const [editCoverPreview, setEditCoverPreview] = useState<string | null>(null);
+  const [newPdfFile, setNewPdfFile] = useState<File | null>(null);
+  const [editPdfFile, setEditPdfFile] = useState<File | null>(null);
+  const [newCoverProgress, setNewCoverProgress] = useState<number | null>(null);
+  const [editCoverProgress, setEditCoverProgress] = useState<number | null>(null);
+  const [newPdfProgress, setNewPdfProgress] = useState<number | null>(null);
+  const [editPdfProgress, setEditPdfProgress] = useState<number | null>(null);
   const newCoverObjectUrlRef = useRef<string | null>(null);
   const editCoverObjectUrlRef = useRef<string | null>(null);
+  const coverObjectUrlsRef = useRef<Map<number, string>>(new Map());
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -108,6 +118,14 @@ const AdminBooksPage: React.FC = () => {
     setEditCoverFile(null);
   };
 
+  const clearNewPdfFile = () => {
+    setNewPdfFile(null);
+  };
+
+  const clearEditPdfFile = () => {
+    setEditPdfFile(null);
+  };
+
   const handleCoverSelect = (file: File, mode: "create" | "edit") => {
     if (!file.type.startsWith("image/")) {
       toast.error("Faqat rasm fayllarini yuklash mumkin.");
@@ -120,6 +138,7 @@ const AdminBooksPage: React.FC = () => {
 
     const objectUrl = URL.createObjectURL(file);
     if (mode === "create") {
+      setNewCoverProgress(null);
       if (newCoverObjectUrlRef.current) {
         URL.revokeObjectURL(newCoverObjectUrlRef.current);
       }
@@ -129,6 +148,7 @@ const AdminBooksPage: React.FC = () => {
       return;
     }
 
+    setEditCoverProgress(null);
     if (editCoverObjectUrlRef.current) {
       URL.revokeObjectURL(editCoverObjectUrlRef.current);
     }
@@ -137,13 +157,98 @@ const AdminBooksPage: React.FC = () => {
     setEditCoverPreview(objectUrl);
   };
 
-  const uploadCoverImage = async (bookId: number, file: File) => {
+  const uploadCoverImage = async (
+    bookId: number,
+    file: File,
+    onProgress?: (progress: number) => void,
+  ) => {
     const formData = new FormData();
     formData.append("file", file);
     await api.post(`/api/books/${bookId}/cover`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
+      onUploadProgress: (event) => {
+        if (!event.total) return;
+        const progress = Math.round((event.loaded / event.total) * 100);
+        onProgress?.(progress);
+      },
     });
   };
+
+  const uploadPdfFile = async (
+    bookId: number,
+    file: File,
+    onProgress?: (progress: number) => void,
+  ) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    await api.post(`/api/books/file/pdf/${bookId}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+      onUploadProgress: (event) => {
+        if (!event.total) return;
+        const progress = Math.round((event.loaded / event.total) * 100);
+        onProgress?.(progress);
+      },
+    });
+  };
+
+  const handlePdfSelect = (file: File, mode: "create" | "edit") => {
+    const isPdf =
+      file.type === "application/pdf" ||
+      file.name.toLowerCase().endsWith(".pdf");
+    if (!isPdf) {
+      toast.error("Faqat PDF fayl yuklash mumkin.");
+      return;
+    }
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error("PDF hajmi 50MB dan oshmasligi kerak.");
+      return;
+    }
+
+    if (mode === "create") {
+      setNewPdfProgress(null);
+      setNewPdfFile(file);
+      return;
+    }
+    setEditPdfProgress(null);
+    setEditPdfFile(file);
+  };
+
+  const setCoverFromFile = (bookId: number, file: File) => {
+    const existing = coverObjectUrlsRef.current.get(bookId);
+    if (existing) {
+      URL.revokeObjectURL(existing);
+    }
+    const objectUrl = URL.createObjectURL(file);
+    coverObjectUrlsRef.current.set(bookId, objectUrl);
+    setBookCovers((prev) => ({ ...prev, [bookId]: objectUrl }));
+  };
+
+  const fetchCoverForBook = useCallback(
+    async (bookId: number) => {
+      if (Number.isNaN(bookId)) return;
+      setBookCovers((prev) => {
+        if (bookId in prev) return prev;
+        return { ...prev, [bookId]: undefined };
+      });
+
+      try {
+        const response = await api.get<Blob>(`/api/books/book-image/${bookId}`, {
+          responseType: "blob",
+        });
+        if (!response.data || response.data.size === 0) {
+          setBookCovers((prev) => ({ ...prev, [bookId]: null }));
+          return;
+        }
+
+        const objectUrl = URL.createObjectURL(response.data);
+        coverObjectUrlsRef.current.set(bookId, objectUrl);
+        setBookCovers((prev) => ({ ...prev, [bookId]: objectUrl }));
+      } catch (error) {
+        setBookCovers((prev) => ({ ...prev, [bookId]: null }));
+      }
+    },
+    [setBookCovers],
+  );
 
   const normalizeBooks = (data: unknown) => {
     if (Array.isArray(data)) {
@@ -194,6 +299,31 @@ const AdminBooksPage: React.FC = () => {
   }, [fetchBooks]);
 
   useEffect(() => {
+    const ids = books.map((book) => book.id).filter((id): id is number => !!id);
+    const idSet = new Set(ids);
+
+    // Cleanup object URLs for books not in current list
+    coverObjectUrlsRef.current.forEach((url, id) => {
+      if (!idSet.has(id)) {
+        URL.revokeObjectURL(url);
+        coverObjectUrlsRef.current.delete(id);
+        setBookCovers((prev) => {
+          if (!(id in prev)) return prev;
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+      }
+    });
+
+    ids.forEach((id) => {
+      if (!(id in bookCovers)) {
+        void fetchCoverForBook(id);
+      }
+    });
+  }, [books, bookCovers, fetchCoverForBook]);
+
+  useEffect(() => {
     return () => {
       if (newCoverObjectUrlRef.current) {
         URL.revokeObjectURL(newCoverObjectUrlRef.current);
@@ -203,6 +333,8 @@ const AdminBooksPage: React.FC = () => {
         URL.revokeObjectURL(editCoverObjectUrlRef.current);
         editCoverObjectUrlRef.current = null;
       }
+      coverObjectUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      coverObjectUrlsRef.current.clear();
     };
   }, []);
 
@@ -269,6 +401,7 @@ const AdminBooksPage: React.FC = () => {
       isFeatured: false,
     });
     clearNewCoverPreview();
+    clearNewPdfFile();
   };
 
   const openEditModal = (book: BookResponse) => {
@@ -296,11 +429,13 @@ const AdminBooksPage: React.FC = () => {
     if (existingCover) {
       setEditCoverPreview(existingCover);
     }
+    clearEditPdfFile();
   };
 
   const closeEditModal = () => {
     setEditingBook(null);
     clearEditCoverPreview();
+    clearEditPdfFile();
   };
 
   const toggleEditSubCategoryId = (id: number) => {
@@ -360,7 +495,14 @@ const AdminBooksPage: React.FC = () => {
       await api.put(`/api/books/update/${editingBook.id}`, payload);
       if (editCoverFile) {
         try {
-          await uploadCoverImage(editingBook.id, editCoverFile);
+          setEditCoverProgress(0);
+          await uploadCoverImage(
+            editingBook.id,
+            editCoverFile,
+            setEditCoverProgress,
+          );
+          setCoverFromFile(editingBook.id, editCoverFile);
+          setEditCoverProgress(100);
         } catch (uploadError) {
           toast.error(
             getErrorMessage(
@@ -368,6 +510,22 @@ const AdminBooksPage: React.FC = () => {
               "Muqova rasmini yuklashda xatolik yuz berdi.",
             ),
           );
+          setEditCoverProgress(null);
+        }
+      }
+      if (editPdfFile) {
+        try {
+          setEditPdfProgress(0);
+          await uploadPdfFile(editingBook.id, editPdfFile, setEditPdfProgress);
+          setEditPdfProgress(100);
+        } catch (uploadError) {
+          toast.error(
+            getErrorMessage(
+              uploadError,
+              "PDF faylni yuklashda xatolik yuz berdi.",
+            ),
+          );
+          setEditPdfProgress(null);
         }
       }
       toast.success("Kitob ma'lumotlari yangilandi.");
@@ -446,7 +604,10 @@ const AdminBooksPage: React.FC = () => {
       const { data } = await api.post<BookResponse>("/api/books/create", payload);
       if (newCoverFile && data?.id) {
         try {
-          await uploadCoverImage(data.id, newCoverFile);
+          setNewCoverProgress(0);
+          await uploadCoverImage(data.id, newCoverFile, setNewCoverProgress);
+          setCoverFromFile(data.id, newCoverFile);
+          setNewCoverProgress(100);
         } catch (uploadError) {
           toast.error(
             getErrorMessage(
@@ -454,6 +615,22 @@ const AdminBooksPage: React.FC = () => {
               "Muqova rasmini yuklashda xatolik yuz berdi.",
             ),
           );
+          setNewCoverProgress(null);
+        }
+      }
+      if (newPdfFile && data?.id) {
+        try {
+          setNewPdfProgress(0);
+          await uploadPdfFile(data.id, newPdfFile, setNewPdfProgress);
+          setNewPdfProgress(100);
+        } catch (uploadError) {
+          toast.error(
+            getErrorMessage(
+              uploadError,
+              "PDF faylni yuklashda xatolik yuz berdi.",
+            ),
+          );
+          setNewPdfProgress(null);
         }
       }
       toast.success("Kitob muvaffaqiyatli qo'shildi.");
@@ -475,6 +652,28 @@ const AdminBooksPage: React.FC = () => {
       return "--";
     }
     return value;
+  };
+
+  const renderUploadProgress = (progress: number | null) => {
+    if (progress === null) return null;
+    const isDone = progress >= 100;
+    const label = isDone
+      ? "Yuklandi"
+      : progress === 0
+        ? "Yuklanmoqda..."
+        : `Yuklanmoqda: ${progress}%`;
+
+    return (
+      <div className="mt-2 space-y-1">
+        <div className="h-2 w-full overflow-hidden rounded-full bg-[#E3DBCF]/60">
+          <div
+            className="h-full rounded-full bg-[#6B4F3A] transition-all duration-300"
+            style={{ width: `${Math.min(progress, 100)}%` }}
+          />
+        </div>
+        <p className="text-[11px] text-[#6B6B6B]">{label}</p>
+      </div>
+    );
   };
 
   const renderCategoryGroups = (book: BookResponse) => {
@@ -659,15 +858,19 @@ const AdminBooksPage: React.FC = () => {
                       <td className="border-r border-[#E3DBCF] px-4 py-4 text-[#2B2B2B]">
                         <div className="flex items-center gap-3">
                           <div className="flex h-12 w-9 items-center justify-center overflow-hidden rounded-md border border-[#E3DBCF] bg-white">
-                            {resolveCoverUrl(book.coverImage) ? (
+                            {book.id && bookCovers[book.id] ? (
                               <img
-                                src={resolveCoverUrl(book.coverImage) ?? ""}
+                                src={bookCovers[book.id] ?? ""}
                                 alt={book.title ?? "Muqova"}
                                 className="h-full w-full object-cover"
                               />
-                            ) : (
+                            ) : book.id && bookCovers[book.id] === null ? (
                               <span className="text-[10px] text-[#9A9A9A]">
                                 Rasm yo'q
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-[#9A9A9A]">
+                                Yuklanmoqda...
                               </span>
                             )}
                           </div>
@@ -842,6 +1045,43 @@ const AdminBooksPage: React.FC = () => {
                 <p className="text-xs text-[#9A9A9A]">
                   JPG/PNG, 5MB gacha.
                 </p>
+                {renderUploadProgress(newCoverProgress)}
+              </div>
+
+              <div className="space-y-2 lg:col-span-2">
+                <label className="text-xs font-medium text-[#6B6B6B]">
+                  PDF fayl (ixtiyoriy)
+                </label>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                  <div className="rounded-lg border border-[#E3DBCF] bg-white px-4 py-2 text-sm text-[#6B6B6B]">
+                    {newPdfFile ? newPdfFile.name : "PDF tanlanmagan"}
+                  </div>
+                  <label className="inline-flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-[#E3DBCF] bg-white px-4 py-2 text-sm text-[#6B6B6B] transition hover:bg-[#EFE7DB]/60">
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      className="hidden"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        if (file) handlePdfSelect(file, "create");
+                      }}
+                    />
+                    PDF tanlash
+                  </label>
+                  {newPdfFile && (
+                    <button
+                      type="button"
+                      onClick={clearNewPdfFile}
+                      className="text-xs font-semibold text-[#6B6B6B] hover:text-[#2B2B2B]"
+                    >
+                      Bekor qilish
+                    </button>
+                  )}
+                </div>
+                <p className="text-xs text-[#9A9A9A]">
+                  Faqat PDF, 50MB gacha.
+                </p>
+                {renderUploadProgress(newPdfProgress)}
               </div>
 
                 <div className="space-y-2">
@@ -1163,6 +1403,45 @@ const AdminBooksPage: React.FC = () => {
                   <p className="text-xs text-[#9A9A9A]">
                     JPG/PNG, 5MB gacha.
                   </p>
+                  {renderUploadProgress(editCoverProgress)}
+                </div>
+
+                <div className="space-y-2 lg:col-span-2">
+                  <label className="text-xs font-medium text-[#6B6B6B]">
+                    PDF fayl (ixtiyoriy)
+                  </label>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                    <div className="rounded-lg border border-[#E3DBCF] bg-white px-4 py-2 text-sm text-[#6B6B6B]">
+                      {editPdfFile
+                        ? editPdfFile.name
+                        : "PDF tanlanmagan"}
+                    </div>
+                    <label className="inline-flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-[#E3DBCF] bg-white px-4 py-2 text-sm text-[#6B6B6B] transition hover:bg-[#EFE7DB]/60">
+                      <input
+                        type="file"
+                        accept="application/pdf"
+                        className="hidden"
+                        onChange={(event) => {
+                          const file = event.target.files?.[0];
+                          if (file) handlePdfSelect(file, "edit");
+                        }}
+                      />
+                      PDF tanlash
+                    </label>
+                    {editPdfFile && (
+                      <button
+                        type="button"
+                        onClick={clearEditPdfFile}
+                        className="text-xs font-semibold text-[#6B6B6B] hover:text-[#2B2B2B]"
+                      >
+                        Bekor qilish
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-xs text-[#9A9A9A]">
+                    Faqat PDF, 50MB gacha.
+                  </p>
+                  {renderUploadProgress(editPdfProgress)}
                 </div>
 
                 <div className="space-y-2">
@@ -1510,6 +1789,5 @@ interface PagedResponse<T> {
   number?: number;
   size?: number;
 }
-
 
 

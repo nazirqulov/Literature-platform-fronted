@@ -1,73 +1,58 @@
-# React + TypeScript + Vite
+# Literature Platform Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+O'zbek adabiyotini raqamlashtirish va global auditoriya uchun interaktiv platforma.
+Ushbu frontend foydalanuvchilar uchun mutolaa muhiti, profil boshqaruvi va
+admin panel orqali kontentni boshqarishni ta'minlaydi.
 
-Currently, two official plugins are available:
+## Asosiy funksiyalar
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Mehmonlar uchun landing sahifa (hero + loyihaga kirish).
+- Foydalanuvchi autentifikatsiyasi (login/registratsiya, email tasdiqlash).
+- Foydalanuvchi profili va profil rasmi upload.
+- Admin panel (SUPERADMIN):
+  - Kitoblar: yaratish, tahrirlash, muqova rasmi upload, ro'yxat/pagination.
+  - Foydalanuvchilar: yaratish, tahrirlash, o'chirish, filtr/pagination.
+  - Mualliflar: CRUD.
+  - Kategoriyalar: CRUD + subcategory.
+- Light/Dark theme (tab orqali almashish).
 
-## React Compiler
+## Texnologiyalar
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19 + TypeScript
+- Vite
+- Tailwind CSS
+- Axios
+- React Router
+- React Hook Form + Yup
+- React Toastify
 
-## Expanding the ESLint configuration
+## Ishga tushirish
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Muhim eslatmalar
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- Backend base URL: `http://localhost:8080`
+- Avtorizatsiya: `Authorization: Bearer <token>`
+- Admin panel faqat `SUPERADMIN` roliga ochiq.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Loyihaning tuzilishi (qisqa)
+
+- `src/features/auth` — login/registratsiya/email tasdiqlash.
+- `src/features/dashboard` — guest/user dashboard.
+- `src/features/profile` — profil va rasm upload.
+- `src/features/admin` — admin panel bo'limlari.
+- `src/shared` — umumiy UI komponentlar (Navbar, Sidebar, Route guards).
+- `src/context` — Auth va Theme context.
+- `src/services` — axios client.
+
+## Skriptlar
+
+- `npm run dev` — development server.
+- `npm run build` — production build.
+- `npm run preview` — buildni local ko'rish.
+- `npm run lint` — lint tekshiruvi.
+
