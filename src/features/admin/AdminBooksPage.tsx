@@ -3,6 +3,10 @@ import { toast } from "react-toastify";
 import { Pencil, Plus, X } from "lucide-react";
 import api from "../../services/api";
 import type { AxiosError } from "axios";
+import { pdfjs } from "react-pdf";
+import workerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+
+pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 
 const AdminBooksPage: React.FC = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -177,10 +181,12 @@ const AdminBooksPage: React.FC = () => {
   const uploadPdfFile = async (
     bookId: number,
     file: File,
+    pageCount: number,
     onProgress?: (progress: number) => void,
   ) => {
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("pageCount", String(pageCount));
     await api.post(`/api/books/file/pdf/${bookId}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
       onUploadProgress: (event) => {
@@ -191,7 +197,7 @@ const AdminBooksPage: React.FC = () => {
     });
   };
 
-  const handlePdfSelect = (file: File, mode: "create" | "edit") => {
+  const handlePdfSelect = async (file: File, mode: "create" | "edit") => {
     const isPdf =
       file.type === "application/pdf" ||
       file.name.toLowerCase().endsWith(".pdf");
@@ -204,13 +210,39 @@ const AdminBooksPage: React.FC = () => {
       return;
     }
 
+    const readPageCount = async () => {
+      try {
+        const data = await file.arrayBuffer();
+        const loadingTask = pdfjs.getDocument({ data });
+        const pdf = await loadingTask.promise;
+        const pages = pdf.numPages;
+        await pdf.destroy();
+        return pages;
+      } catch {
+        return null;
+      }
+    };
+
     if (mode === "create") {
       setNewPdfProgress(null);
       setNewPdfFile(file);
+      const pages = await readPageCount();
+      if (pages) {
+        setNewBook((prev) => ({ ...prev, pageCount: String(pages) }));
+      } else {
+        toast.error("PDF sahifa sonini aniqlab bo'lmadi.");
+      }
       return;
     }
+
     setEditPdfProgress(null);
     setEditPdfFile(file);
+    const pages = await readPageCount();
+    if (pages) {
+      setEditingBook((prev) => (prev ? { ...prev, pageCount: String(pages) } : prev));
+    } else {
+      toast.error("PDF sahifa sonini aniqlab bo'lmadi.");
+    }
   };
 
   const setCoverFromFile = (bookId: number, file: File) => {
@@ -468,6 +500,15 @@ const AdminBooksPage: React.FC = () => {
       new Set([...editingBook.subCategoryIds, ...manualIds]),
     );
 
+    const resolvedEditPageCount = editPdfFile
+      ? await resolvePdfPageCount(editPdfFile, editingBook.pageCount)
+      : parsePageCount(editingBook.pageCount);
+
+    if (editPdfFile && !resolvedEditPageCount) {
+      toast.error("PDF sahifa sonini aniqlab bo'lmadi.");
+      return;
+    }
+
     const payload: BookCreateRequest = {
       title: editingBook.title.trim(),
       description: editingBook.description.trim() || undefined,
@@ -481,7 +522,7 @@ const AdminBooksPage: React.FC = () => {
         : undefined,
       publisher: editingBook.publisher.trim() || undefined,
       language: editingBook.language.trim() || undefined,
-      pageCount: editingBook.pageCount ? Number(editingBook.pageCount) : undefined,
+      pageCount: resolvedEditPageCount ?? undefined,
       isFeatured: editingBook.isFeatured,
     };
 
@@ -515,9 +556,19 @@ const AdminBooksPage: React.FC = () => {
       }
       if (editPdfFile) {
         try {
-          setEditPdfProgress(0);
-          await uploadPdfFile(editingBook.id, editPdfFile, setEditPdfProgress);
-          setEditPdfProgress(100);
+          if (resolvedEditPageCount) {
+            setEditingBook((prev) =>
+              prev ? { ...prev, pageCount: String(resolvedEditPageCount) } : prev,
+            );
+            setEditPdfProgress(0);
+            await uploadPdfFile(
+              editingBook.id,
+              editPdfFile,
+              resolvedEditPageCount,
+              setEditPdfProgress,
+            );
+            setEditPdfProgress(100);
+          }
         } catch (uploadError) {
           toast.error(
             getErrorMessage(
@@ -562,6 +613,29 @@ const AdminBooksPage: React.FC = () => {
       .map((item) => Number(item.trim()))
       .filter((num) => !Number.isNaN(num) && num > 0);
 
+  const parsePageCount = (value: string) => {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return null;
+    const normalized = Math.floor(parsed);
+    return normalized > 0 ? normalized : null;
+  };
+
+  const resolvePdfPageCount = async (file: File, value: string) => {
+    const existing = parsePageCount(value);
+    if (existing) return existing;
+
+    try {
+      const data = await file.arrayBuffer();
+      const loadingTask = pdfjs.getDocument({ data });
+      const pdf = await loadingTask.promise;
+      const pages = pdf.numPages;
+      await pdf.destroy();
+      return pages;
+    } catch {
+      return null;
+    }
+  };
+
   const createBook = async () => {
     if (!newBook.title.trim()) {
       toast.error("Kitob nomi majburiy.");
@@ -577,6 +651,15 @@ const AdminBooksPage: React.FC = () => {
       new Set([...newBook.subCategoryIds, ...manualIds]),
     );
 
+    const resolvedNewPageCount = newPdfFile
+      ? await resolvePdfPageCount(newPdfFile, newBook.pageCount)
+      : parsePageCount(newBook.pageCount);
+
+    if (newPdfFile && !resolvedNewPageCount) {
+      toast.error("PDF sahifa sonini aniqlab bo'lmadi.");
+      return;
+    }
+
     const payload: BookCreateRequest = {
       title: newBook.title.trim(),
       description: newBook.description.trim() || undefined,
@@ -590,7 +673,7 @@ const AdminBooksPage: React.FC = () => {
         : undefined,
       publisher: newBook.publisher.trim() || undefined,
       language: newBook.language.trim() || undefined,
-      pageCount: newBook.pageCount ? Number(newBook.pageCount) : undefined,
+      pageCount: resolvedNewPageCount ?? undefined,
       isFeatured: newBook.isFeatured,
     };
 
@@ -620,9 +703,17 @@ const AdminBooksPage: React.FC = () => {
       }
       if (newPdfFile && data?.id) {
         try {
-          setNewPdfProgress(0);
-          await uploadPdfFile(data.id, newPdfFile, setNewPdfProgress);
-          setNewPdfProgress(100);
+          if (resolvedNewPageCount) {
+            setNewBook((prev) => ({ ...prev, pageCount: String(resolvedNewPageCount) }));
+            setNewPdfProgress(0);
+            await uploadPdfFile(
+              data.id,
+              newPdfFile,
+              resolvedNewPageCount,
+              setNewPdfProgress,
+            );
+            setNewPdfProgress(100);
+          }
         } catch (uploadError) {
           toast.error(
             getErrorMessage(
@@ -1063,7 +1154,7 @@ const AdminBooksPage: React.FC = () => {
                       className="hidden"
                       onChange={(event) => {
                         const file = event.target.files?.[0];
-                        if (file) handlePdfSelect(file, "create");
+                          if (file) void handlePdfSelect(file, "create");
                       }}
                     />
                     PDF tanlash
@@ -1181,15 +1272,10 @@ const AdminBooksPage: React.FC = () => {
                   </label>
                   <input
                     value={newBook.pageCount}
-                    onChange={(event) =>
-                    setNewBook((prev) => ({
-                      ...prev,
-                      pageCount: event.target.value,
-                    }))
-                  }
-                  className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
-                  placeholder="320"
-                />
+                    readOnly
+                    className="w-full cursor-not-allowed rounded-lg border border-[#E3DBCF] bg-[#EFE7DB]/60 px-3 py-2 text-sm text-[#2B2B2B]"
+                    placeholder="PDF yuklanganda avtomatik chiqadi"
+                  />
               </div>
 
                 <div className="flex items-center gap-2 lg:col-span-2">
@@ -1423,7 +1509,7 @@ const AdminBooksPage: React.FC = () => {
                         className="hidden"
                         onChange={(event) => {
                           const file = event.target.files?.[0];
-                          if (file) handlePdfSelect(file, "edit");
+                          if (file) void handlePdfSelect(file, "edit");
                         }}
                       />
                       PDF tanlash
@@ -1538,13 +1624,9 @@ const AdminBooksPage: React.FC = () => {
                   </label>
                   <input
                     value={editingBook.pageCount}
-                    onChange={(event) =>
-                      setEditingBook((prev) =>
-                        prev ? { ...prev, pageCount: event.target.value } : prev,
-                      )
-                    }
-                    className="w-full rounded-lg border border-[#E3DBCF] bg-[#F5F1E8] px-3 py-2 text-sm text-[#2B2B2B]"
-                    placeholder="320"
+                    readOnly
+                    className="w-full cursor-not-allowed rounded-lg border border-[#E3DBCF] bg-[#EFE7DB]/60 px-3 py-2 text-sm text-[#2B2B2B]"
+                    placeholder="PDF yuklanganda avtomatik chiqadi"
                   />
                 </div>
 
@@ -1789,5 +1871,3 @@ interface PagedResponse<T> {
   number?: number;
   size?: number;
 }
-
-

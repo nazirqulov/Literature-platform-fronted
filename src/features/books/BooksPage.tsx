@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { BookOpen } from "lucide-react";
 import { toast } from "react-toastify";
 import api from "../../services/api";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 interface BookCategoryResponse {
   id?: number;
@@ -32,12 +32,12 @@ const BooksPage: React.FC = () => {
   const [books, setBooks] = useState<BookResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const selectedSubcategory = searchParams.get("sub");
   const [searchTerm, setSearchTerm] = useState("");
   const [bookCovers, setBookCovers] = useState<
     Record<number, string | null | undefined>
   >({});
-  const [openingPdfId, setOpeningPdfId] = useState<number | null>(null);
   const coverObjectUrlsRef = useRef<Map<number, string>>(new Map());
 
   const normalizeBooks = (data: unknown) => {
@@ -123,29 +123,9 @@ const BooksPage: React.FC = () => {
     };
   }, []);
 
-  const openPdfViewer = async (bookId: number) => {
+  const openReader = (bookId: number) => {
     if (Number.isNaN(bookId)) return;
-    setOpeningPdfId(bookId);
-
-    try {
-      const response = await api.get<Blob>(`/api/books/${bookId}/pdf`, {
-        responseType: "blob",
-      });
-      if (!response.data || response.data.size === 0) {
-        toast.error("PDF fayl topilmadi.");
-        return;
-      }
-      const objectUrl = URL.createObjectURL(response.data);
-      const opened = window.open(objectUrl, "_blank", "noopener,noreferrer");
-      if (!opened) {
-        toast.error("PDF yangi oynada ochilmadi. Popup bloklangan bo'lishi mumkin.");
-      }
-      setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
-    } catch {
-      toast.error("PDF faylni yuklashda xatolik yuz berdi.");
-    } finally {
-      setOpeningPdfId(null);
-    }
+    navigate(`/books/${bookId}/read`);
   };
 
   const filteredBooks = useMemo(() => {
@@ -231,13 +211,10 @@ const BooksPage: React.FC = () => {
                     {book.id && (
                       <div className="pt-2">
                         <button
-                          onClick={() => openPdfViewer(book.id as number)}
-                          disabled={openingPdfId === book.id}
+                          onClick={() => openReader(book.id as number)}
                           className="inline-flex items-center gap-2 rounded-lg border border-[#E3DBCF] bg-white px-3 py-1.5 text-xs font-semibold text-[#6B4F3A] transition hover:bg-[#F5F1E8] disabled:opacity-70"
                         >
-                          {openingPdfId === book.id
-                            ? "Yuklanmoqda..."
-                            : "Kitobni ochish"}
+                          Kitobni ochish
                         </button>
                       </div>
                     )}
